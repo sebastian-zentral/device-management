@@ -48,7 +48,6 @@ payloadkeys:
   default: 0
   content: |-
     Configures the certificate trust check and has one of the following possible values:
-
     * '0': Turns off certificate trust check.
     * '1': Turns on certificate trust check. A standard validity check is performed but doesn't include additional revocation checks.
     * '2': Turns on certificate trust check. A soft revocation check is also performed. Until the certificate is explicitly rejected by CRL/OCSP, it's considered valid. This setting means that unavailable or unreachable CRL/OCSP allow this check to succeed.

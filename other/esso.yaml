@@ -10,7 +10,7 @@ payload:
     tvOS:
       introduced: n/a
     visionOS:
-      introduced: n/a
+      introduced: '2.0'
     watchOS:
       introduced: n/a
 payloadkeys:
@@ -53,7 +53,28 @@ payloadkeys:
 - key: ConfigurationProfile
   title: Configuration Profile
   type: <data>
-  presence: required
+  presence: optional
   content: The profile containing an ExtensibleSingleSignOn payload that specifies
     the SSO extension in the downloaded app prior to enrollment. This profile may
     contain certificate payloads.
+- key: Declarations
+  title: Declarations
+  supportedOS:
+    iOS:
+      introduced: '18.4'
+    visionOS:
+      introduced: '2.4'
+  type: <array>
+  presence: optional
+  content: The set of declarative device management declarations used to specify the
+    managed app and its configuration (including any certificates or identities).
+    The set of declarations must include one `com.apple.configuration.app.managed`
+    configuration, and one activation declaration that references the configuration.
+    Asset declarations may be present if required by the app config. The app configuration
+    must include `AppStoreID` when developer mode is not being used, or it must include
+    `BundleID` when developer mode is used. One of `ConfigurationProfile` and `Declarations`
+    must be present.
+  subkeys:
+  - key: Declaration
+    title: Declaration Domain
+    type: <data>

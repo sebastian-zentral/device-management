@@ -111,7 +111,6 @@ payloadkeys:
       - EvaluateConnection
       content: |-
         The action to take if this dictionary matches the current network. Allowed values:
-
         * 'Connect': Apply DNS Settings when the dictionary matches.
         * 'Disconnect': Don't apply DNS Settings when the dictionary matches.
         * 'EvaluateConnection': Apply DNS Settings with per-domain exceptions when the dictionary matches.

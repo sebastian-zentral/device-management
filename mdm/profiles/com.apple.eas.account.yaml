@@ -41,9 +41,7 @@ payloadkeys:
   title: Exchange ActiveSync Host
   type: <string>
   presence: optional
-  content: |-
-    The Exchange server host name or IP address.
-    If using OAuth without an OAuthSignInURL, the host name is ignored.
+  content: The Exchange server host name or IP address.
 - key: SSL
   title: Use SSL
   type: <boolean>

@@ -105,11 +105,9 @@ payloadkeys:
   - 5
   content: |-
     A bitwise OR of the management flags. The possible values are:
-
     * '1': If 'InstallAsManaged' is 'true', remove the app upon removal of the MDM profile.
     * '4': Prevent backup of app data.
     * '5': Both '1' and '4'.
-
     Available in iOS 5 and later, macOS 11 and later, and tvOS 10.2 and later.
 - key: Configuration
   supportedOS:

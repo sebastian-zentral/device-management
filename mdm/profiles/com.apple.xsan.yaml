@@ -22,6 +22,7 @@ payload:
     watchOS:
       introduced: n/a
   content: Sets up Xsan clients and controls certain Xsan volume mount behaviors.
+    The payload should include either sanConfigURLs or fsnameservers, but not both.
 payloadkeys:
 - key: sanName
   type: <string>
@@ -30,9 +31,9 @@ payloadkeys:
     exactly match the name of the SAN defined in the metadata server.
 - key: sanConfigURLs
   type: <array>
-  presence: required
+  presence: optional
   content: |-
-    An array of LDAP URLs where Xsan systems can obtain SAN configuration updates. This key is required for all Xsan SANs. There should be one entry for each Xsan MDC.
+    This key is required for all Xsan SANs. Each string in this array contains an LDAP URL where Xsan systems can obtain SAN configuration updates. There should be one entry for each Xsan MDC.
     Example URL: 'ldaps://mdc1.example.com:389'.
   subkeys:
   - key: sanConfigURLsItem
@@ -41,10 +42,11 @@ payloadkeys:
     content: A URL.
 - key: fsnameservers
   type: <array>
-  presence: required
-  content: |-
-    An array of storage area network (SAN) File System Name Server coordinators. The list should contain the same addresses in the same order as the metadata controller (MDC) '/Library/Preferences/Xsan/fsnameservers' file.  Xsan SAN clients automatically receive updates to the 'fsnameservers' list from the SAN configuration servers whenever this list changes. StorNext administrators should update their profile whenever the 'fsnameservers' list changes.
-    This key is required for StorNext SANs.
+  presence: optional
+  content: This key is required for StorNext SANs. This array contains one string
+    value for each of the SAN's File System Name Server coordinators. The list should
+    contain the same addresses in the same order as the MDC's /Library/Preferences/Xsan/fsnameservers
+    file.
   subkeys:
   - key: fsnameserversItem
     type: <string>

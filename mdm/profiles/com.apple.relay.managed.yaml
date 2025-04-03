@@ -119,6 +119,50 @@ payloadkeys:
   - key: ExcludedDomainsElement
     title: Excluded Domains Element
     type: <string>
+- key: MatchFQDNs
+  title: Match FQDNs
+  supportedOS:
+    iOS:
+      introduced: '18.4'
+    macOS:
+      introduced: '15.4'
+    tvOS:
+      introduced: '18.4'
+    visionOS:
+      introduced: '2.4'
+  type: <array>
+  presence: optional
+  content: A list of Fully Qualified Domain Names (FQDNs), also known as hostnames,
+    that should be routed through the servers contained in Relays. Any connection
+    that matches this exact FQDN or hostname will use the relays. If no FQDNs and
+    no 'MatchDomains' are listed, traffic to all domains, except those matching an
+    excluded domain or excluded FQDN, will be routed to the relay servers.
+  subkeys:
+  - key: MatchFQDNsElement
+    title: Match FQDNs Element
+    type: <string>
+- key: Excluded FQDNs
+  title: Excluded FQDNs
+  supportedOS:
+    iOS:
+      introduced: '18.4'
+    macOS:
+      introduced: '15.4'
+    tvOS:
+      introduced: '18.4'
+    visionOS:
+      introduced: '2.4'
+  type: <array>
+  presence: optional
+  content: A list of Fully Qualified Domain Names (FQDNs), also known as hostnames,
+    that should not be routed through the servers contained in Relays. Any connection
+    that matches the FQDN exactly will not use the relay server. When 'MatchDomains'
+    are also specified any FQDN listed here in 'ExcludedFQDNs' should be a subdomain
+    of at least one MatchDomain otherwise it will not have any effect.
+  subkeys:
+  - key: ExcludedFQDNsElement
+    title: Excluded FQDNs Element
+    type: <string>
 - key: RelayUUID
   type: <string>
   presence: optional

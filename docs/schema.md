@@ -267,6 +267,6 @@ The `subkeys` sequence in a `<array>` container defines the type of items in the
 
 * if the single item's type is a scalar type, then the array is a list of items with elements matching the scalar type (e.g. an array of `<string>` values). In some cases the scalar type may have a `subkeys` key, and each element of that sequence defines a possible value for the scalar type in the array.
 
-* if the single item's type is `<dictionary>`, then the array is a list of dictionary items, with each dictionary conforming to the schema defined by the `subkeys` item of the single item (e.g., an array of `<dictionary>` values). Note that the single item `<dictionary>` is only a place holder for the keys used in the `<dictionary>` array items, and as such does not itself appear as the an array item.
+* if the single item's type is `<dictionary>`, then the array is a list of dictionary items, with each dictionary conforming to the schema defined by the `subkeys` item of the single item (e.g., an array of `<dictionary>` values). Note that the single item `<dictionary>` is only a place holder for the keys used in the `<dictionary>` array items, and as such does not itself appear as an array item.
 
 * if the single item's type is `<array>`, then the array is a list of array items, with each array item conforming to the schema defined for an `<array>` container as described in this section.

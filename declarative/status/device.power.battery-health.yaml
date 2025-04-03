@@ -47,4 +47,4 @@ payloadkeys:
     * 'unknown': The system couldn't determine battery health information.
     * 'unsupported': The device doesn't support battery health reporting.
 
-    Available in iOS 17 and later on iPhone only, and macOS 14.4 and later on Apple silicon Mac computers. iPad and Intel-based Macs return 'unsupported'.
+    Available in iOS 17 and later on iPhone, iPadOS 18.4 and later on supported iPad models, and macOS 14.4 and later on Apple silicon Mac computers.

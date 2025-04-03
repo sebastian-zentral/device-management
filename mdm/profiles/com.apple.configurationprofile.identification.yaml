@@ -6,6 +6,7 @@ payload:
       introduced: n/a
     macOS:
       introduced: '10.7'
+      deprecated: '15.4'
       multiple: false
       devicechannel: true
       userchannel: true

@@ -299,10 +299,37 @@ payloadkeys:
   content: |-
     If 'false', the system disables the App Store, and the system removes its icon from the Home screen. Users are unable to install or update their apps. This applies to App Store apps, marketplace apps, and locally installed apps (using Configurator, Xcode, etc).
     In iOS 10 and later, MDM commands can override this restriction. Available in iOS 4 and later, and watchOS 10 and later. Requires a supervised device in iOS 13 and later, and watchOS.
+- key: allowAppleIntelligenceReport
+  title: Allow Apple Intelligence Report
+  supportedOS:
+    iOS:
+      introduced: '18.4'
+      supervised: true
+      sharedipad:
+        mode: forbidden
+      userenrollment:
+        mode: forbidden
+    macOS:
+      introduced: '15.4'
+      userenrollment:
+        mode: forbidden
+    tvOS:
+      introduced: n/a
+    visionOS:
+      introduced: n/a
+    watchOS:
+      introduced: n/a
+  type: <boolean>
+  presence: optional
+  default: true
+  content: If 'false', the system disables Apple Intelligence reports. Available in
+    iOS 18.4 and later, and macOS 15.4 and later.
 - key: allowApplePersonalizedAdvertising
   supportedOS:
     iOS:
       introduced: '14.0'
+      sharedipad:
+        mode: ignored
       userenrollment:
         mode: forbidden
     macOS:
@@ -350,6 +377,8 @@ payloadkeys:
     iOS:
       introduced: '18.0'
       supervised: true
+      sharedipad:
+        mode: ignored
       userenrollment:
         mode: forbidden
     macOS:
@@ -372,6 +401,8 @@ payloadkeys:
     iOS:
       introduced: '18.0'
       supervised: true
+      sharedipad:
+        mode: ignored
       userenrollment:
         mode: forbidden
     macOS:
@@ -554,6 +585,8 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: '14.5'
+      sharedipad:
+        mode: forbidden
       userenrollment:
         mode: forbidden
     macOS:
@@ -1101,6 +1134,50 @@ payloadkeys:
   content: If 'false', disables default browser preference modification. The MDM Settings
     command to set the default browser preference will still work when this is applied.
     Available in iOS 18.2 and later, and visionOS 2.2 and later.
+- key: allowDefaultCallingAppModification
+  title: Allow default calling app modification
+  supportedOS:
+    iOS:
+      introduced: '18.4'
+      supervised: true
+      userenrollment:
+        mode: forbidden
+    macOS:
+      introduced: n/a
+    tvOS:
+      introduced: n/a
+    visionOS:
+      introduced: n/a
+    watchOS:
+      introduced: n/a
+  type: <boolean>
+  presence: optional
+  default: true
+  content: If 'false', disables default calling app preference modification. The MDM
+    Settings command to set the default calling app preference still works when this
+    is applied. Available in iOS 18.4 and later.
+- key: allowDefaultMessagingAppModification
+  title: Allow default messaging app modification
+  supportedOS:
+    iOS:
+      introduced: '18.4'
+      supervised: true
+      userenrollment:
+        mode: forbidden
+    macOS:
+      introduced: n/a
+    tvOS:
+      introduced: n/a
+    visionOS:
+      introduced: n/a
+    watchOS:
+      introduced: n/a
+  type: <boolean>
+  presence: optional
+  default: true
+  content: If 'false', disables default messaging app preference modification. The
+    MDM Settings command to set the default messaging app preference still works when
+    this is applied. Available in iOS 18.4 and later.
 - key: allowDefinitionLookup
   title: Allow Define
   supportedOS:
@@ -1255,17 +1332,21 @@ payloadkeys:
     tvOS:
       introduced: n/a
     visionOS:
-      introduced: n/a
+      introduced: '2.4'
+      supervised: true
+      allowmanualinstall: false
+      userenrollment:
+        mode: forbidden
     watchOS:
       introduced: n/a
   type: <array>
   presence: optional
-  content: Array of strings, but currently restricted to a single element. If present,
-    Apple Intelligence will only allow the given external integration workspace ID
-    to be used, and will require a sign-in in order to make requests; the user will
-    be required to sign in to integrations that support signing in. Multiple payloads
-    will combine using an intersect operation. This means the allowed set of workspace
-    IDs can become the empty set if conflicting values are specified in multiple payloads.
+  content: An array of strings, but currently restricted to a single element. If present,
+    Apple Intelligence only allows the given external integration workspace ID to
+    be used, and requires a sign-in to make requests; the user will be required to
+    sign in to integrations that support signing in. Multiple payloads combine using
+    an intersect operation. This means the allowed set of workspace IDs can become
+    the empty set if conflicting values are specified in multiple payloads.
   subkeys:
   - key: allowedWorkspaceID
     title: Allowed Workspace ID
@@ -1276,6 +1357,8 @@ payloadkeys:
     iOS:
       introduced: '8.0'
       supervised: true
+      sharedipad:
+        mode: ignored
       userenrollment:
         mode: forbidden
     macOS:
@@ -1457,7 +1540,6 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: '18.2'
-      supervised: false
       sharedipad:
         mode: forbidden
       userenrollment:
@@ -1469,7 +1551,9 @@ payloadkeys:
     tvOS:
       introduced: n/a
     visionOS:
-      introduced: n/a
+      introduced: '2.4'
+      userenrollment:
+        mode: allowed
     watchOS:
       introduced: n/a
   type: <boolean>
@@ -1485,19 +1569,20 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: '18.2'
-      supervised: true
       sharedipad:
         mode: forbidden
       userenrollment:
-        mode: forbidden
+        mode: allowed
     macOS:
       introduced: '15.2'
       userenrollment:
-        mode: forbidden
+        mode: allowed
     tvOS:
       introduced: n/a
     visionOS:
-      introduced: n/a
+      introduced: '2.4'
+      userenrollment:
+        mode: allowed
     watchOS:
       introduced: n/a
   type: <boolean>
@@ -1575,6 +1660,8 @@ payloadkeys:
     iOS:
       introduced: '13.0'
       supervised: true
+      sharedipad:
+        mode: forbidden
       userenrollment:
         mode: forbidden
     macOS:
@@ -1597,6 +1684,8 @@ payloadkeys:
     iOS:
       introduced: '13.0'
       supervised: true
+      sharedipad:
+        mode: forbidden
       userenrollment:
         mode: forbidden
     macOS:
@@ -1692,6 +1781,8 @@ payloadkeys:
     iOS:
       introduced: '6.0'
       supervised: true
+      sharedipad:
+        mode: ignored
       userenrollment:
         mode: forbidden
     macOS:
@@ -1727,7 +1818,10 @@ payloadkeys:
     tvOS:
       introduced: n/a
     visionOS:
-      introduced: n/a
+      introduced: '2.4'
+      supervised: true
+      userenrollment:
+        mode: forbidden
     watchOS:
       introduced: n/a
   type: <boolean>
@@ -1795,7 +1889,10 @@ payloadkeys:
     tvOS:
       introduced: n/a
     visionOS:
-      introduced: n/a
+      introduced: '2.4'
+      supervised: true
+      userenrollment:
+        mode: forbidden
     watchOS:
       introduced: n/a
   type: <boolean>
@@ -1818,7 +1915,10 @@ payloadkeys:
     tvOS:
       introduced: n/a
     visionOS:
-      introduced: n/a
+      introduced: '2.4'
+      supervised: true
+      userenrollment:
+        mode: forbidden
     watchOS:
       introduced: n/a
   type: <boolean>
@@ -2118,6 +2218,33 @@ payloadkeys:
   default: true
   content: If 'false', the system disables Mail Privacy Protection on the device.
     Requires a supervised device. Available in iOS 15.2 and later.
+- key: allowMailSmartReplies
+  supportedOS:
+    iOS:
+      introduced: '18.4'
+      supervised: true
+      sharedipad:
+        mode: forbidden
+      userenrollment:
+        mode: forbidden
+    macOS:
+      introduced: '15.4'
+      userenrollment:
+        mode: forbidden
+    tvOS:
+      introduced: n/a
+    visionOS:
+      introduced: '2.4'
+      supervised: true
+      userenrollment:
+        mode: forbidden
+    watchOS:
+      introduced: n/a
+  type: <boolean>
+  presence: optional
+  default: true
+  content: If 'false', disables smart replies in Mail. Available in iOS 18.2 and later,
+    and macOS 15.2 and later.
 - key: allowMailSummary
   supportedOS:
     iOS:
@@ -2134,7 +2261,10 @@ payloadkeys:
     tvOS:
       introduced: n/a
     visionOS:
-      introduced: n/a
+      introduced: '2.4'
+      supervised: true
+      userenrollment:
+        mode: forbidden
     watchOS:
       introduced: n/a
   type: <boolean>
@@ -2192,6 +2322,8 @@ payloadkeys:
     iOS:
       introduced: '17.4'
       supervised: true
+      sharedipad:
+        mode: forbidden
       userenrollment:
         mode: forbidden
     macOS:
@@ -2316,6 +2448,30 @@ payloadkeys:
   default: true
   content: If 'false', the system disables NFC. Requires a supervised device. Available
     in iOS 14.2 and later.
+- key: allowNotesTranscription
+  supportedOS:
+    iOS:
+      introduced: '18.4'
+      supervised: true
+      sharedipad:
+        mode: forbidden
+      userenrollment:
+        mode: forbidden
+    macOS:
+      introduced: '15.4'
+      userenrollment:
+        mode: forbidden
+    tvOS:
+      introduced: n/a
+    visionOS:
+      introduced: n/a
+    watchOS:
+      introduced: n/a
+  type: <boolean>
+  presence: optional
+  default: true
+  content: If 'false', disables transcription in Notes. Available in iOS 18.2 and
+    later, and macOS 15.2 and later.
 - key: allowNotesTranscriptionSummary
   supportedOS:
     iOS:
@@ -2338,7 +2494,8 @@ payloadkeys:
   type: <boolean>
   presence: optional
   default: true
-  content: If false, disables transcription summarization in Notes.
+  content: If 'false', disables transcription summarization in Notes. Available in
+    iOS 18.3 and later, and macOS 15.3 and later.
 - key: allowNotificationsModification
   title: Allow Modifying Notifications Settings
   supportedOS:
@@ -2468,6 +2625,8 @@ payloadkeys:
     iOS:
       introduced: '9.0'
       supervised: true
+      sharedipad:
+        mode: forbidden
       userenrollment:
         mode: forbidden
     macOS:
@@ -2533,6 +2692,7 @@ payloadkeys:
         mode: forbidden
     tvOS:
       introduced: '12.0'
+      deprecated: '17.4'
       supervised: true
     visionOS:
       introduced: n/a
@@ -2543,7 +2703,8 @@ payloadkeys:
   default: true
   content: If 'false', the system disables requesting passwords from nearby devices.
     Available in iOS 12 and later, macOS 10.14 and later, and tvOS 12 and later. Requires
-    a supervised device in iOS and tvOS.
+    a supervised device in iOS and tvOS. Deprecated on tvOS 17.4 or later as guest
+    password sharing is no longer supported.
 - key: allowPasswordSharing
   supportedOS:
     iOS:
@@ -2701,6 +2862,8 @@ payloadkeys:
     iOS:
       introduced: '11.0'
       supervised: true
+      sharedipad:
+        mode: ignored
       userenrollment:
         mode: forbidden
     macOS:
@@ -2885,6 +3048,33 @@ payloadkeys:
     removes its icon from the Home screen. This setting also prevents users from opening
     web clips. As of iOS 13, requires a supervised device. Available in iOS 4 and
     later.
+- key: allowSafariSummary
+  supportedOS:
+    iOS:
+      introduced: '18.4'
+      supervised: true
+      sharedipad:
+        mode: forbidden
+      userenrollment:
+        mode: forbidden
+    macOS:
+      introduced: '15.4'
+      userenrollment:
+        mode: forbidden
+    tvOS:
+      introduced: n/a
+    visionOS:
+      introduced: '2.4'
+      supervised: true
+      userenrollment:
+        mode: forbidden
+    watchOS:
+      introduced: n/a
+  type: <boolean>
+  presence: optional
+  default: true
+  content: If 'false', the system disables the ability to summarize content in Safari.
+    Available in iOS 18.2 and later, and macOS 15.2 and later.
 - key: allowSatelliteConnection
   title: Allow use of satellite connectivity
   supportedOS:
@@ -2906,7 +3096,8 @@ payloadkeys:
   type: <boolean>
   presence: optional
   default: true
-  content: If false, the connection to and use of satellite services is prohibited.
+  content: If 'false', the system prohibits the connection to and use of satellite
+    services. Available in iOS 18.2 and later.
 - key: allowScreenShot
   title: Allow Screenshots and Screen Recording
   supportedOS:
@@ -2930,6 +3121,8 @@ payloadkeys:
     iOS:
       introduced: '13.4'
       supervised: true
+      sharedipad:
+        mode: required
       userenrollment:
         mode: forbidden
     macOS:
@@ -3256,6 +3449,27 @@ payloadkeys:
   default: true
   content: If 'false', the system hides the FaceTime app. Available in iOS 4 and later.
     Requires a supervised device in iOS 13 and later.
+- key: allowVideoConferencingRemoteControl
+  title: Allow Video Conferencing Remote Control
+  supportedOS:
+    iOS:
+      introduced: '18.4'
+      supervised: true
+      userenrollment:
+        mode: forbidden
+    macOS:
+      introduced: n/a
+    tvOS:
+      introduced: n/a
+    visionOS:
+      introduced: n/a
+    watchOS:
+      introduced: n/a
+  type: <boolean>
+  presence: optional
+  default: true
+  content: When false, disables the ability for a remote FaceTime session to request
+    control of the device.
 - key: allowVisualIntelligenceSummary
   title: Allow Visual Intelligence Summary
   supportedOS:
@@ -3277,7 +3491,8 @@ payloadkeys:
   type: <boolean>
   presence: optional
   default: true
-  content: When false, disables visual intelligence summarization.
+  content: If 'false', the system disables visual intelligence summarization. Available
+    in iOS 18.3 and later.
 - key: allowVoiceDialing
   title: Allow Voice Dialing While Device is Locked
   supportedOS:
@@ -3351,6 +3566,8 @@ payloadkeys:
     iOS:
       introduced: '17.5'
       supervised: true
+      sharedipad:
+        mode: forbidden
       userenrollment:
         mode: forbidden
     macOS:
@@ -3383,7 +3600,10 @@ payloadkeys:
     tvOS:
       introduced: n/a
     visionOS:
-      introduced: n/a
+      introduced: '2.4'
+      supervised: true
+      userenrollment:
+        mode: forbidden
     watchOS:
       introduced: n/a
   type: <boolean>
@@ -4022,6 +4242,8 @@ payloadkeys:
     iOS:
       introduced: '17.2'
       supervised: true
+      sharedipad:
+        mode: forbidden
       userenrollment:
         mode: forbidden
     macOS:
@@ -4147,7 +4369,6 @@ payloadkeys:
   content: |-
     The maximum level of app content allowed on the device. Preinstalled (first party) apps ignore this restriction. Available in iOS 4.0 and later, macOS 15 and later, and tvOS 11.3 and later.  Support for this restriction on unsupervised devices is deprecated.
     Possible values, with the US description of the rating level:
-
     * '1000': All
     * '600': 17+
     * '300': 12+
@@ -4179,7 +4400,6 @@ payloadkeys:
   content: |-
     The maximum level of movie content allowed on the device. Available in iOS 4.0 and later, macOS 15 and later, and tvOS 11.3 and later.  Support for this restriction on unsupervised devices is deprecated.
     Possible values, with the US description of the rating level:
-
     * '1000': All
     * '500': NC-17
     * '400': R
@@ -4234,7 +4454,6 @@ payloadkeys:
   content: |-
     The maximum level of TV content allowed on the device. Available in iOS 4.0 and later, macOS 15 and later, and tvOS 11.3 and later. Support for this restriction on unsupervised devices is deprecated.
     Possible values, with the US description of the rating level:
-
     * '1000': All
     * '600': TV-MA
     * '500': TV-14
@@ -4284,7 +4503,6 @@ payloadkeys:
   default: 2.0
   content: |-
     Defines the conditions under which the device accepts cookies. The user-facing settings changed in iOS 11, although the possible values remain the same. Available in iOS 4 and later. Support for this restriction on unsupervised devices is deprecated. Allowed values:
-
     * '0': Enables Prevent Cross-Site Tracking and Block All Cookies, and the user canʼt disable either setting.
     * '1' or '1.5': Enables Prevent Cross-Site Tracking, and the user canʼt disable it. Doesn't enable Block All Cookies, but the user can enable it.
     * '2': Enables Prevent Cross-Site Tracking but doesn't enable Block All Cookies. The user can toggle either setting.

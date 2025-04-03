@@ -440,3 +440,12 @@ payloadkeys:
       type: <string>
       presence: required
       content: A local account username.
+  - key: AllowDeviceIdentifiersInAttestation
+    supportedOS:
+      macOS:
+        introduced: '15.4'
+    type: <boolean>
+    presence: optional
+    default: false
+    content: If set to true, the device UDID and serial number will be included in
+      Platform SSO attestations.

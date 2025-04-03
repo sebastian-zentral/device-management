@@ -92,11 +92,9 @@ payloadkeys:
       - 3
       content: |-
         A number that indicates where to use the wallpaper, which is one of the following values:
-
         * '1': Lock screen
         * '2': Home screen
         * '3': Both lock and home screens.
-
         In iOS 16 and later, and iPadOS 17 and later, when you set the wallpaper for the first time, the system sets both the lock screen and home screen. After that, you can separately set each location.
   - key: DataRoaming
     supportedOS:
@@ -723,6 +721,24 @@ payloadkeys:
           here overrides the value specified in MDM, and only applies when 'BootstrapTokenAllowedForAuthentication'
           is 'true' in the SecurityInfoResponse.SecurityInfo response. This value
           is available for Apple silicon in macOS 11 and later.
+      - key: IdleRebootAllowed
+        supportedOS:
+          iOS:
+            introduced: '18.4'
+          macOS:
+            introduced: n/a
+          tvOS:
+            introduced: n/a
+          visionOS:
+            introduced: n/a
+          watchOS:
+            introduced: n/a
+        type: <boolean>
+        presence: optional
+        default: false
+        content: If true, device will automatically reboot while locked after several
+          days of inactivity. This will be turned off by default upon enrollment on
+          supervised devices.
   - key: MaximumResidentUsers
     supportedOS:
       iOS:

@@ -2085,12 +2085,10 @@ responsekeys:
     - 3
     content: |-
       The cellular technology type, which is one of the following values:
-
       * '0': None
       * '1': GSM
       * '2': CDMA
       * '3': GSM and CDMA
-
       Requires the Device Information access right. Available in iOS 4.2.6 and later.
   - key: BatteryLevel
     supportedOS:
@@ -2315,9 +2313,8 @@ responsekeys:
           removed: '15.0'
       type: <string>
       presence: optional
-      content: The result code of last software update scan; '”0”' = success. This
-        value is available in macOS 10.11 and later. This key was removed in macOS
-        15 as it has been unsupported since macOS 11.
+      content: The result code of last software update scan; '0' = success. This value
+        is available in macOS 10.11 and no longer available in macOS 15 and later.
     - key: PerformPeriodicCheck
       type: <boolean>
       content: If 'true', start a new scan. This value is available in macOS 10.11

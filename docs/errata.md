@@ -2,6 +2,19 @@
 
 This document lists errata for the YAML schema. This is used when older versions of the schema are incorrect, and a fix was made in later schema to correct the problem.
 
+
+## iOS 18.4 / macOS 15.4
+
+Added AuthName, AuthPassword and RemoteAddress keys to VPN subkey that were previously missing
+
+Removed Password key from VPN subkey that was incorrectly added
+
+## iOS 18.4
+
+Adjusted supportedOS information for Shared iPad for a number of restrictions
+
+Hideable and Lockable attributes in the app.managed configuration were missing - originally added in 18.1.
+
 ## macOS 15.2
 
 Added missing supervised key to macOS across profiles and commands

@@ -113,6 +113,21 @@ payloadkeys:
   presence: optional
   content: The VPN dictionary is used when VPNType is VPN.
   subkeys:
+  - key: AuthName
+    title: Account Username
+    type: <string>
+    presence: optional
+    content: The VPN account username.
+  - key: AuthPassword
+    title: Account Password
+    type: <string>
+    presence: optional
+    content: The VPN account password. Only used if AuthenticationMethod is Password.
+  - key: RemoteAddress
+    title: RemoteAddress
+    type: <string>
+    presence: required
+    content: IP address or hostname of the VPN server.
   - key: AuthenticationMethod
     title: Authentication Method
     type: <string>
@@ -129,11 +144,6 @@ payloadkeys:
     presence: optional
     content: The UUID of the certificate payload within the same profile to use for
       account credentials.
-  - key: Password
-    title: Account Password
-    type: <string>
-    presence: optional
-    content: The VPN user password.
   - key: ProviderBundleIdentifier
     title: Provider Bundle Identifier
     type: <string>
