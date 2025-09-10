@@ -1,5 +1,5 @@
 title: Remove Application Command
-description: This command allows a server to remove a managed app.
+description: Remove an app.
 payload:
   requesttype: RemoveApplication
   supportedOS:
@@ -38,12 +38,20 @@ payload:
       introduced: '10.0'
       accessrights: AllowAppInstallation
       supervised: false
-  content: This command allows a server to remove a managed app. This command will
-    fail for apps that are managed by Declarative Device Management.
 payloadkeys:
 - key: Identifier
   type: <string>
   presence: required
   content: |-
     The bundle identifier of the managed app.
-    For a watchOS app, the identifier needs to be the watch's bundle identifier, which differs from the main bundle identifier for the iPhone to which the watch is paired. Obtain the watch's bundle identifier for an app with a watch bundle, in the 'watchBundleId' key that's part of the Content Metadata query. For more information on this query, see Getting App and Book Information (Legacy).
+
+    > Important:
+    > For a watchOS app, the identifier needs to be the watch's bundle identifier, which differs from the main bundle identifier for the iPhone to which the watch is paired. Obtain the watch's bundle identifier for an app with a watch bundle, in the `watchBundleId` key that's part of the Content Metadata query. For more information on this query, see `Getting App and Book Information`.
+notes:
+- title: ''
+  content: |-
+    This command allows a server to remove managed apps. It also allows a server to remove unmanaged and system deletable apps on supervised devices in iOS 26 and later, tvOS 26 and later, visionOS 26 and later, and watchOS 26 and later. When the device removes an app, it also removes the data for the app.
+
+    This command fails for apps that Declarative Device Management is managing.
+
+    Refer to the following sections to determine supported channels and requirements, and to see an example request and response.

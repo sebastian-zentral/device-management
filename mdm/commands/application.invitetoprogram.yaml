@@ -1,5 +1,5 @@
 title: Invite To Program Command
-description: This command allows a server to invite a user to join a program.
+description: Invite a user to join the Volume Purchase Program (VPP).
 payload:
   requesttype: InviteToProgram
   supportedOS:
@@ -29,18 +29,13 @@ payload:
       introduced: n/a
     watchOS:
       introduced: n/a
-  content: This command allows a server to invite a user to join a program. This command
-    issues the invitation, but does not allow the server to monitor whether the user
-    has joined the program. This command is supported in the user channel. This command
-    will yield a NotNow status until the user exits Setup Assistant. This command
-    does not work with Account Driven Device Enrollment.
 payloadkeys:
 - key: ProgramID
   type: <string>
   presence: required
   rangelist:
   - com.apple.cloudvpp
-  content: The program's identifier, which can only be 'com.apple.cloudvpp'.
+  content: The program's identifier, which can only be `com.apple.cloudvpp`.
 - key: InvitationURL
   type: <string>
   presence: required
@@ -54,3 +49,11 @@ responsekeys:
   - InvalidProgramID
   - InvalidInvitationURL
   content: The result of the command.
+notes:
+- title: ''
+  content: |-
+    This command allows a server to invite a user to join the Volume Purchase Program (VPP). It issues the invitation, but doesn't allow the server to monitor whether the user joins the program. This command yields a `NotNow` status if Setup Assistant is running.
+
+    The command doesn't work with Account Driven enrollments.
+
+    Refer to the following sections to determine supported channels and requirements, and to see an example request and response.

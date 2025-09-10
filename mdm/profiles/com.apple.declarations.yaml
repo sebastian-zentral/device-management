@@ -1,5 +1,6 @@
 title: Declarations
-description: Declarations
+description: The payload that applies a set of declarations to the device through
+  the Settings app.
 payload:
   payloadtype: com.apple.declarations
   supportedOS:
@@ -40,20 +41,23 @@ payload:
       multiple: true
       supervised: false
       allowmanualinstall: true
-  content: This profile applies a set of declarations to the device via the Settings
-    app. This allows manual installations of declarations in cases where an MDM enrollment
-    is not present. This profile can only be manually installed, and cannot be installed
-    via an MDM server.
 payloadkeys:
 - key: Declarations
   title: Declarations
   type: <array>
   presence: required
-  content: The set of declarations to apply. The items in this array are Base64-encoded
-    data representations of the declaration JSON data.
+  content: The set of declarations to apply. The array items are Base64-encoded data
+    representations of the declaration JSON data.
   subkeys:
   - key: DeclarationsItem
     title: Declarations Content Item
     type: <data>
     presence: required
     content: An item in the declarations list
+notes:
+- title: ''
+  content: |-
+    This profile applies a set of declarations to the device. This allows a user to install declarations without requiring an MDM enrollment. A configuration profile containing this payload type can't be installed by a device management server. Device management servers need to use declarative device management to install declarations.
+
+    > Important:
+    > When a user installs the profile, the device only applies configuration declarations that allow a "local" enrollment. Consult the documentation for each configuration type to see if you can use it.

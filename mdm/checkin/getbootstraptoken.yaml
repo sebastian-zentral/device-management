@@ -1,10 +1,14 @@
 title: Get Bootstrap Token
-description: Check-in protocol get bootstrap token data.
+description: Gets the bootstrap token from the server.
 payload:
   requesttype: GetBootstrapToken
   supportedOS:
     iOS:
-      introduced: n/a
+      introduced: '26.0'
+      supervised: true
+      requiresdep: true
+      userenrollment:
+        mode: forbidden
     macOS:
       introduced: '10.15'
       devicechannel: true
@@ -16,7 +20,11 @@ payload:
     tvOS:
       introduced: n/a
     visionOS:
-      introduced: n/a
+      introduced: '26.0'
+      supervised: true
+      requiresdep: true
+      userenrollment:
+        mode: forbidden
     watchOS:
       introduced: n/a
   content: Check-in protocol get bootstrap token data request and response.
@@ -26,15 +34,25 @@ payloadkeys:
   presence: required
   rangelist:
   - GetBootstrapToken
-  content: The message type, which must have a value of 'GetBootstrapToken'.
+  content: The message type, which requires a value of `GetBootstrapToken`.
 - key: AwaitingConfiguration
   type: <boolean>
   presence: optional
   default: false
-  content: If 'true', the device is awaiting a DeviceConfigured MDM command before
-    proceeding through Setup Assistant.
+  content: If `true`, the device is awaiting a `Device-Configured-Command` command
+    before proceeding through Setup Assistant.
 responsekeys:
 - key: BootstrapToken
   type: <data>
   presence: optional
   content: The current bootstrap token data for the device.
+notes:
+- title: ''
+  content: |-
+    A server that supports this request needs to include a `com.apple.mdm.bootstraptoken` value in the `ServerCapabilities` key of the MDM profile payload to enroll the device.
+
+    This request returns the device's bootstrap token data that the server stores.
+
+    If a bootstrap token isn't available, the server returns a success response with either a zero-length value for the `BootstrapToken` key or omits the key.
+
+    Requires a device enrolled using Automated Device Enrollment.
