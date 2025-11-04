@@ -2,6 +2,22 @@
 
 This document lists errata for the YAML schema. This is used when older versions of the schema are incorrect, and a fix was made in later schema to correct the problem.
 
+## iOS 26.1 / tvOS 26.1
+
+### mdm/profiles/com.apple.homescreenlayout.yaml
+
+The `IconItem` incorrectly stated the enum value was `App` but it is `Application`
+
+## macOS 26.1
+
+### other/skipkeys.yaml
+
+The OSShowcase and UpdateCompleted skip keys were incorrectly marked as available in macOS 26.0. They are available beginning macOS 26.1. 
+
+### mdm/profiles/com.apple.screensaver.yaml
+
+The `idleTime` key was incorrectly named `loginWindowIdleTime`.
+
 ## iOS 26.0
 
 ### mdm/profiles/com.apple.airplay.yaml

@@ -68,7 +68,7 @@ payloadkeys:
         The version of the update, which the system requires if `ProductKey` isn't present. This value is available in iOS 11.3 and later, macOS 12 and later, and tvOS 12.2 and later.
 
         > Note:
-        > This value isn't available for use with Rapid Security Response (RSR) updates.
+        > This value isn't available for use with Background Security Improvement updates.
     - key: InstallAction
       type: <string>
       presence: required

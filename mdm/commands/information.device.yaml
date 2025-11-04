@@ -265,9 +265,9 @@ payloadkeys:
           accessrights: AllowQueryDeviceInformation
       type: <string>
       presence: optional
-      content: The key to get the OS update rapid security response version letter,
-        if a rapid security response update is installed. Requires the Device Information
-        access right.
+      content: The key to get the OS update Background Security Improvement version
+        letter, if a Background Security Improvement update is installed. Requires
+        the Device Information access right.
     - key: BuildVersion
       supportedOS:
         iOS:
@@ -301,9 +301,10 @@ payloadkeys:
           accessrights: AllowQueryDeviceInformation
       type: <string>
       presence: optional
-      content: The key to get the build version for the currently installed rapid
-        security response. If there's no installed rapid security response, this value
-        is the same as `BuildVersion`. Requires the Device Information access right.
+      content: The key to get the build version for the currently installed Background
+        Security Improvement. If there's no installed Background Security Improvement,
+        this value is the same as `BuildVersion`. Requires the Device Information
+        access right.
     - key: ModelName
       supportedOS:
         iOS:
@@ -1974,7 +1975,7 @@ responsekeys:
       tvOS:
         introduced: '16.1'
     type: <string>
-    content: The OS update rapid security response version letter.
+    content: The OS update Background Security Improvement version letter.
   - key: BuildVersion
     type: <string>
     content: The operating system version. Requires the Device Information access

@@ -188,7 +188,8 @@ payloadkeys:
       introduced: n/a
   type: <dictionary>
   presence: optional
-  content: The dictionary to configure Platform SSO.
+  content: The dictionary to configure Platform SSO. Requires `Type` to be set to
+    `Redirect`.
   subkeys:
   - key: AuthenticationMethod
     type: <string>

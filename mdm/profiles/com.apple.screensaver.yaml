@@ -43,7 +43,7 @@ payloadkeys:
     unlock or stop the screen saver (the grace period). A value of `2147483647` (for
     example, `0x7FFFFFFF`) disables this requirement. To use this option, you must
     set `askForPassword` to `true`. Available in macOS 10.13 and later.
-- key: loginWindowIdleTime
+- key: idleTime
   type: <integer>
   presence: optional
   content: The number of seconds of inactivity before the screen saver activates (0

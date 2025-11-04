@@ -10,7 +10,7 @@ payload:
       supervised: true
       requiresdep: true
       sharedipad:
-        mode: allowed
+        mode: required
         devicechannel: false
         userchannel: true
       userenrollment:

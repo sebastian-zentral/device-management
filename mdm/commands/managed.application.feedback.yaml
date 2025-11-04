@@ -20,7 +20,7 @@ payload:
       devicechannel: false
       userchannel: true
       userenrollment:
-        mode: forbidden
+        mode: allowed
     tvOS:
       introduced: '10.2'
       accessrights: AllowAppInstallation
@@ -74,7 +74,7 @@ responsekeys:
 notes:
 - title: ''
   content: |-
-    This command allows the server to get the feedback information of managed apps.
+    This command allows the server to get the feedback information of managed apps. In macOS 12 and later, macOS supports this command on the user channel.
 
     The response doesn't include apps that Declarative Device Management is managing.
 

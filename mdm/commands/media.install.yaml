@@ -16,6 +16,8 @@ payload:
         mode: allowed
     macOS:
       introduced: '10.9'
+      deprecated: '11.0'
+      removed: '11.0'
       accessrights: AllowAppInstallation
       devicechannel: false
       userchannel: true

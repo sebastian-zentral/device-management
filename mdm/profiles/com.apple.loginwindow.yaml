@@ -67,7 +67,8 @@ payloadkeys:
   type: <array>
   presence: optional
   content: The list of user GUIDs or group GUIDs of users that the system allows to
-    log in. An asterisk (`*`) string specifies all users or groups.
+    log in. An asterisk (`*`) string specifies all users or groups. This only applies
+    to network accounts and mobile accounts.
   subkeys:
   - key: AllowListItem
     type: <string>
@@ -77,7 +78,8 @@ payloadkeys:
   type: <array>
   presence: optional
   content: The list of user GUIDs or group GUIDs of users that the system disallows
-    to log in. This list takes priority over the list in the `AllowList` key.
+    to log in. This list takes priority over the list in the `AllowList` key. This
+    only applies to network accounts and mobile accounts.
   subkeys:
   - key: DenyListItem
     type: <string>

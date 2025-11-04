@@ -1052,7 +1052,8 @@ payloadkeys:
   type: <boolean>
   presence: optional
   default: true
-  content: If `false`, the system disables content caching.
+  content: If `false`, the system disables content caching. This restriction is not
+    supported on the user channel.
 - key: allowContinuousPathKeyboard
   title: Allow Continuous Path Keyboard
   supportedOS:
@@ -2837,7 +2838,7 @@ payloadkeys:
   default: true
   content: If `false`, the system disables Apple Music Radio.
 - key: allowRapidSecurityResponseInstallation
-  title: Allow Rapid Security Response Installation
+  title: Allow Background Security Improvement Installation
   supportedOS:
     iOS:
       introduced: '16.0'
@@ -2859,9 +2860,9 @@ payloadkeys:
   type: <boolean>
   presence: optional
   default: true
-  content: If `false`, the system prohibits installation of rapid security responses.
+  content: If `false`, the system prohibits installation of Background Security Improvements.
 - key: allowRapidSecurityResponseRemoval
-  title: Allow Rapid Security Response Removal
+  title: Allow Background Security Improvement Removal
   supportedOS:
     iOS:
       introduced: '16.0'
@@ -2883,7 +2884,7 @@ payloadkeys:
   type: <boolean>
   presence: optional
   default: true
-  content: If `false`, the system prohibits removal of rapid security responses.
+  content: If `false`, the system prohibits removal of Background Security Improvements.
 - key: allowRCSMessaging
   supportedOS:
     iOS:
@@ -3251,7 +3252,7 @@ payloadkeys:
   presence: optional
   default: true
   content: If `false`, the system prevents modification of Time Machine settings in
-    System Settings.
+    System Settings. This restriction is not supported on the user channel.
 - key: allowUIAppInstallation
   title: Allow App Installation from App Store
   supportedOS:
@@ -3411,7 +3412,7 @@ payloadkeys:
   content: If `false`, the system allows iOS devices to always connect to USB accessories
     while locked. In macOS, allows new USB and Thunderbolt accessories, and SD cards
     to connect without authorization. If the system has Lockdown mode enabled, it
-    ignores this value.
+    ignores this value. This restriction is not supported on the user channel.
 - key: allowVideoConferencing
   title: Allow Video Conferencing
   supportedOS:
@@ -4430,6 +4431,31 @@ payloadkeys:
     - `0`: None
 
     This restriction will require supervision in a future release.
+- key: ratingAppsExemptedBundleIDs
+  title: Apps Exempted from Rating Restrictions
+  supportedOS:
+    iOS:
+      introduced: '26.1'
+      allowmanualinstall: false
+      userenrollment:
+        mode: forbidden
+    macOS:
+      introduced: n/a
+    tvOS:
+      introduced: n/a
+    visionOS:
+      introduced: n/a
+    watchOS:
+      introduced: n/a
+  type: <array>
+  presence: optional
+  content: If present, the system exempts apps with bundle IDs in the array from age-based
+    rating restrictions. The system uses intersection combine rules to combine multiple
+    payloads and any exceptions that parental control apps provide, including ScreenTime.
+  subkeys:
+  - key: ratingAppsExemptedBundleID
+    title: Exempted App
+    type: <string>
 - key: ratingMovies
   title: Movies Ranking Number
   supportedOS:

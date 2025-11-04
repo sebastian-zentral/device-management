@@ -57,7 +57,7 @@ payloadkeys:
 notes:
 - title: ''
   content: |-
-    This profile applies a set of declarations to the device. This allows a user to install declarations without requiring an MDM enrollment. A configuration profile containing this payload type can't be installed by a device management server. Device management servers need to use declarative device management to install declarations.
+    This profile applies a set of declarations to the device. Users use this profile to install declarations without requiring an MDM enrollment. A device management server can't install a configuration profile containing this payload type. Device management servers need to use declarative device management to install declarations.
 
     > Important:
     > When a user installs the profile, the device only applies configuration declarations that allow a "local" enrollment. Consult the documentation for each configuration type to see if you can use it.

@@ -43,7 +43,7 @@ payloadkeys:
       type: <string>
       presence: required
       rangelist:
-      - App
+      - Application
       - Folder
       - WebClip
       content: The type of the Dock item.
