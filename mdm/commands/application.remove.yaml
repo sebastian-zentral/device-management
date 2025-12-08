@@ -22,7 +22,7 @@ payload:
       supervised: false
       requiresdep: false
       userenrollment:
-        mode: forbidden
+        mode: allowed
     tvOS:
       introduced: '10.2'
       accessrights: AllowAppInstallation

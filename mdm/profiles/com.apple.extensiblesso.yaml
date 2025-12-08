@@ -361,6 +361,18 @@ payloadkeys:
       - `com.apple.security.pkcs12`
       - `com.apple.security.acme`
       - `com.apple.security.scep`
+  - key: AccessKeyReaderIssuerCertificateUUID
+    supportedOS:
+      macOS:
+        introduced: '26.2'
+    type: <string>
+    presence: optional
+    content: The `PayloadUUID` of a certificate payload for the issuer certificate
+      of the `Terminal` identity of the access key. Other specifications refer to
+      the key as the "Reader CA Public Key". The key must be an elliptic curve key.
+      Required if `NewUserAuthenticationMethods` includes `AccessKey`. The issuer
+      of the Terminal identity of the access key needs to match this certificate,
+      otherwise the device fails the authentication.
   - key: AllowAccessKeyExpressMode
     supportedOS:
       macOS:

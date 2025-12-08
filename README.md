@@ -8,17 +8,11 @@ This release corresponds to the following OS versions
 
 | OS       | Version |
 |----------|---------|
-| iOS      | 26.1    |
-| macOS    | 26.1    |
-| tvOS     | 26.1    |
-| visionOS | 26.1    |
-| watchOS  | 26.1    |
-
-## Important Release Notes
-
-### Declarative device management related status
-
-Declarative device management configuration schema now includes a `related-status-items` key to show the relationship between status items and configurations.
+| iOS      | 26.2    |
+| macOS    | 26.2    |
+| tvOS     | 26.2    |
+| visionOS | 26.2    |
+| watchOS  | 26.2    |
 
 ## What's Available
 

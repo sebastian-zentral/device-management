@@ -155,7 +155,9 @@ payloadkeys:
   - key: Accessibility
     type: <array>
     presence: optional
-    content: Specifies the policies for the app via the Accessibility subsystem.
+    content: Specifies the policies for the app via the Accessibility subsystem. The
+      ability to grant access by this profile is deprecated as of macOS 26.2, and
+      will be removed in macOS 27.0.
     subkeytype: Identity
     subkeys: *id001
   - key: PostEvent
