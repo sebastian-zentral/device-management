@@ -33,7 +33,7 @@ payloadkeys:
   presence: optional
   default: false
   content: If `true`, filters content automatically.
-- key: allowlistEnabled
+- key: allowListEnabled
   supportedOS:
     macOS:
       introduced: '15.2'
@@ -48,8 +48,8 @@ payloadkeys:
   type: <boolean>
   presence: optional
   default: false
-  content: Use `allowlistEnabled` instead.
-- key: siteAllowlist
+  content: Use `allowListEnabled` instead.
+- key: siteAllowList
   supportedOS:
     macOS:
       introduced: '15.2'
@@ -58,9 +58,9 @@ payloadkeys:
   content: |-
     An array of sites that defines an allow list. If specified, this defines additional allowed sites besides those in the automated allow list and deny list, including disallowed adult sites.
 
-    This key is required if `allowlistEnabled` is `true`.
+    This key is required if `allowListEnabled` is `true`.
   subkeys:
-  - key: siteAllowlistItem
+  - key: siteAllowListItem
     type: <dictionary>
     content: A dictionary defining a site for the allow list.
     subkeys:
@@ -78,7 +78,7 @@ payloadkeys:
       deprecated: '15.2'
   type: <array>
   presence: optional
-  content: Use `siteAllowlist` instead.
+  content: Use `siteAllowList` instead.
   subkeys:
   - key: siteWhitelistItem
     type: <dictionary>
@@ -92,7 +92,7 @@ payloadkeys:
       type: <string>
       presence: optional
       content: The site page title.
-- key: filterAllowlist
+- key: filterAllowList
   supportedOS:
     macOS:
       introduced: '15.2'
@@ -101,7 +101,7 @@ payloadkeys:
   content: The array of URLs that defines an allow list. When `restrictWeb` and `useContentFilter`
     are enabled, only URLs in the allow list are available to the user.
   subkeys:
-  - key: filterAllowlistItem
+  - key: filterAllowListItem
     type: <string>
     presence: required
     content: An allowed site.
@@ -111,13 +111,13 @@ payloadkeys:
       deprecated: '15.2'
   type: <array>
   presence: optional
-  content: Use `filterAllowlist` instead.
+  content: Use `filterAllowList` instead.
   subkeys:
   - key: filterWhitelistItem
     type: <string>
     presence: required
     content: An allowed site.
-- key: filterDenylist
+- key: filterDenyList
   supportedOS:
     macOS:
       introduced: '15.2'
@@ -126,7 +126,7 @@ payloadkeys:
   content: The array of URLs that defines a deny list. When `restrictWeb` and `useContentFilter`
     are enabled, no URLs in the deny list are available to the user.
   subkeys:
-  - key: filterDenylistItem
+  - key: filterDenyListItem
     type: <string>
     presence: required
     content: A disallowed site.
@@ -136,7 +136,7 @@ payloadkeys:
       deprecated: '15.2'
   type: <array>
   presence: optional
-  content: Use `filterDenylist` instead.
+  content: Use `filterDenyList` instead.
   subkeys:
   - key: filterBlacklistItem
     type: <string>

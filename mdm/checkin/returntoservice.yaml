@@ -35,6 +35,17 @@ payloadkeys:
   content: The device's UDID (unique device identifier). The system requires this
     value if the enrollment type is a device enrollment.
 responsekeys:
+- key: PreserveDataPlan
+  supportedOS:
+    iOS:
+      introduced: '26.4'
+    visionOS:
+      introduced: n/a
+  type: <boolean>
+  presence: optional
+  default: false
+  content: If `true`, the device preserves the data plan on an iPhone or iPad with
+    eSIM functionality, if one exists. This value is available in iOS 26.4 and later.
 - key: ReturnToService
   type: <dictionary>
   presence: required

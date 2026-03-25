@@ -2,6 +2,24 @@
 
 This document lists errata for the YAML schema. This is used when older versions of the schema are incorrect, and a fix was made in later schema to correct the problem.
 
+## iOS 26.4
+
+### other/skipkeys.yaml
+
+AgeAssurance and AgeBasedSafetySettings are not a valid skip key, these panes are always skipped on managed devices.
+
+## visionOS 26.4
+
+### declarative/status/softwareupdate.device-id.yaml
+
+This status item was incorrectly marked as supported in 26.0.
+
+## macOS 26.4
+
+### mdm/profiles/com.apple.familycontrols.contentfilter
+
+The capitalization of several keys was incorrect.
+
 ## macOS 26.2
 
 ### mdm/commands/remove-application.yaml

@@ -295,6 +295,7 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: '18.4'
+      deprecated: '26.4'
       supervised: true
       sharedipad:
         mode: forbidden
@@ -302,6 +303,7 @@ payloadkeys:
         mode: forbidden
     macOS:
       introduced: '15.4'
+      deprecated: '26.4'
       userenrollment:
         mode: forbidden
     tvOS:
@@ -432,14 +434,17 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: '5.0'
+      deprecated: '26.4'
     macOS:
       introduced: '14.0'
+      deprecated: '26.4'
       userenrollment:
         mode: forbidden
     tvOS:
       introduced: n/a
     visionOS:
       introduced: '2.0'
+      deprecated: '26.4'
     watchOS:
       introduced: n/a
   type: <boolean>
@@ -450,6 +455,7 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: '7.0'
+      deprecated: '26.4'
       supervised: true
       userenrollment:
         mode: forbidden
@@ -460,6 +466,7 @@ payloadkeys:
     visionOS:
       introduced: n/a
     watchOS:
+      deprecated: '26.4'
       supervised: true
   type: <boolean>
   presence: optional
@@ -471,12 +478,15 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: '5.1'
+      deprecated: '26.4'
     macOS:
       introduced: n/a
     tvOS:
       introduced: n/a
     visionOS:
       introduced: n/a
+    watchOS:
+      deprecated: '26.4'
   type: <boolean>
   presence: optional
   default: true
@@ -487,6 +497,7 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: 8.1.3
+      deprecated: '26.4'
       supervised: true
       userenrollment:
         mode: forbidden
@@ -1059,6 +1070,7 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: '13.0'
+      deprecated: '26.4'
       supervised: true
       userenrollment:
         mode: forbidden
@@ -1144,11 +1156,13 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: 8.1.3
+      deprecated: '26.4'
       supervised: true
       userenrollment:
         mode: forbidden
     macOS:
       introduced: '10.11'
+      deprecated: '26.4'
       userenrollment:
         mode: forbidden
     tvOS:
@@ -1250,11 +1264,13 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: '10.3'
+      deprecated: '26.4'
       supervised: true
       userenrollment:
         mode: forbidden
     macOS:
       introduced: '10.13'
+      deprecated: '26.4'
       userenrollment:
         mode: forbidden
     tvOS:
@@ -1302,6 +1318,7 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: '18.3'
+      deprecated: '26.4'
       supervised: true
       allowmanualinstall: false
       sharedipad:
@@ -1310,6 +1327,7 @@ payloadkeys:
         mode: forbidden
     macOS:
       introduced: '15.3'
+      deprecated: '26.4'
       allowmanualinstall: false
       userenrollment:
         mode: forbidden
@@ -1317,6 +1335,7 @@ payloadkeys:
       introduced: n/a
     visionOS:
       introduced: '2.4'
+      deprecated: '26.4'
       supervised: true
       allowmanualinstall: false
       userenrollment:
@@ -1519,18 +1538,21 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: '18.2'
+      deprecated: '26.4'
       sharedipad:
         mode: forbidden
       userenrollment:
         mode: allowed
     macOS:
       introduced: '15.2'
+      deprecated: '26.4'
       userenrollment:
         mode: allowed
     tvOS:
       introduced: n/a
     visionOS:
       introduced: '2.4'
+      deprecated: '26.4'
       userenrollment:
         mode: allowed
     watchOS:
@@ -1547,18 +1569,21 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: '18.2'
+      deprecated: '26.4'
       sharedipad:
         mode: forbidden
       userenrollment:
         mode: allowed
     macOS:
       introduced: '15.2'
+      deprecated: '26.4'
       userenrollment:
         mode: allowed
     tvOS:
       introduced: n/a
     visionOS:
       introduced: '2.4'
+      deprecated: '26.4'
       userenrollment:
         mode: allowed
     watchOS:
@@ -1777,6 +1802,7 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: '18.0'
+      deprecated: '26.4'
       supervised: true
       sharedipad:
         mode: forbidden
@@ -1784,12 +1810,14 @@ payloadkeys:
         mode: forbidden
     macOS:
       introduced: '15.0'
+      deprecated: '26.4'
       userenrollment:
         mode: forbidden
     tvOS:
       introduced: n/a
     visionOS:
       introduced: '2.4'
+      deprecated: '26.4'
       supervised: true
       userenrollment:
         mode: forbidden
@@ -1846,6 +1874,7 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: '18.0'
+      deprecated: '26.4'
       supervised: true
       sharedipad:
         mode: forbidden
@@ -1853,12 +1882,14 @@ payloadkeys:
         mode: forbidden
     macOS:
       introduced: '15.0'
+      deprecated: '26.4'
       userenrollment:
         mode: forbidden
     tvOS:
       introduced: n/a
     visionOS:
       introduced: '2.4'
+      deprecated: '26.4'
       supervised: true
       userenrollment:
         mode: forbidden
@@ -1873,6 +1904,7 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: '18.0'
+      deprecated: '26.4'
       supervised: true
       sharedipad:
         mode: forbidden
@@ -1884,6 +1916,7 @@ payloadkeys:
       introduced: n/a
     visionOS:
       introduced: '2.4'
+      deprecated: '26.4'
       supervised: true
       userenrollment:
         mode: forbidden
@@ -2025,6 +2058,7 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: '9.0'
+      deprecated: '26.4'
       supervised: true
       userenrollment:
         mode: forbidden
@@ -2183,6 +2217,7 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: '18.4'
+      deprecated: '26.4'
       supervised: true
       sharedipad:
         mode: forbidden
@@ -2190,12 +2225,14 @@ payloadkeys:
         mode: forbidden
     macOS:
       introduced: '15.4'
+      deprecated: '26.4'
       userenrollment:
         mode: forbidden
     tvOS:
       introduced: n/a
     visionOS:
       introduced: '2.4'
+      deprecated: '26.4'
       supervised: true
       userenrollment:
         mode: forbidden
@@ -2209,6 +2246,7 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: '18.1'
+      deprecated: '26.4'
       supervised: true
       sharedipad:
         mode: forbidden
@@ -2216,12 +2254,14 @@ payloadkeys:
         mode: forbidden
     macOS:
       introduced: '15.1'
+      deprecated: '26.4'
       userenrollment:
         mode: forbidden
     tvOS:
       introduced: n/a
     visionOS:
       introduced: '2.4'
+      deprecated: '26.4'
       supervised: true
       userenrollment:
         mode: forbidden
@@ -2407,6 +2447,7 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: '18.4'
+      deprecated: '26.4'
       supervised: true
       sharedipad:
         mode: forbidden
@@ -2414,6 +2455,7 @@ payloadkeys:
         mode: forbidden
     macOS:
       introduced: '15.4'
+      deprecated: '26.4'
       userenrollment:
         mode: forbidden
     tvOS:
@@ -2430,6 +2472,7 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: '18.3'
+      deprecated: '26.4'
       supervised: true
       sharedipad:
         mode: forbidden
@@ -2437,6 +2480,7 @@ payloadkeys:
         mode: forbidden
     macOS:
       introduced: '15.3'
+      deprecated: '26.4'
       userenrollment:
         mode: forbidden
     tvOS:
@@ -2641,6 +2685,7 @@ payloadkeys:
     tvOS:
       introduced: '12.0'
       deprecated: '17.4'
+      removed: '26.4'
       supervised: true
     visionOS:
       introduced: n/a
@@ -2700,6 +2745,7 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: '18.0'
+      deprecated: '26.4'
       supervised: true
       sharedipad:
         mode: forbidden
@@ -2761,6 +2807,7 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: 8.1.3
+      deprecated: '26.4'
       supervised: true
       userenrollment:
         mode: forbidden
@@ -2817,6 +2864,8 @@ payloadkeys:
   presence: optional
   default: true
   content: If `false`, disables the prompt to set up new devices that are nearby.
+    Starting with iOS 26.3, this also prevents exporting iOS data to set up new Android
+    devices.
 - key: allowRadioService
   title: Allow iTunes Radio
   supportedOS:
@@ -2964,6 +3013,29 @@ payloadkeys:
     is `false`, the Classroom app doesn't observe remote screens. Requires a supervised
     device until iOS 13 and macOS 10.15. Allowed for user enrollments in macOS 12
     and later.
+- key: allowRosettaUsageAwareness
+  supportedOS:
+    iOS:
+      introduced: n/a
+    macOS:
+      introduced: '26.4'
+      allowmanualinstall: false
+      userenrollment:
+        mode: forbidden
+    tvOS:
+      introduced: n/a
+    visionOS:
+      introduced: n/a
+    watchOS:
+      introduced: n/a
+  type: <boolean>
+  presence: optional
+  default: true
+  content: If `false`, disables Rosetta usage awareness. When Rosetta usage awareness
+    is active, a pop-up dialog is displayed to the user when an app that is using
+    Rosetta is launched. The pop-up dialog indicates that Rosetta will be removed
+    in a future version of the operating system so that the user can contact the app
+    vendor regarding a replacement for the current app.
 - key: allowSafari
   title: Allow use of Safari
   supportedOS:
@@ -3045,6 +3117,7 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: '18.4'
+      deprecated: '26.4'
       supervised: true
       sharedipad:
         mode: forbidden
@@ -3052,12 +3125,14 @@ payloadkeys:
         mode: forbidden
     macOS:
       introduced: '15.4'
+      deprecated: '26.4'
       userenrollment:
         mode: forbidden
     tvOS:
       introduced: n/a
     visionOS:
       introduced: '2.4'
+      deprecated: '26.4'
       supervised: true
       userenrollment:
         mode: forbidden
@@ -3153,6 +3228,7 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: 8.1.3
+      deprecated: '26.4'
       supervised: true
       userenrollment:
         mode: forbidden
@@ -3462,6 +3538,7 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: '18.3'
+      deprecated: '26.4'
       supervised: true
       sharedipad:
         mode: forbidden
@@ -3573,6 +3650,7 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: '18.0'
+      deprecated: '26.4'
       supervised: true
       sharedipad:
         mode: forbidden
@@ -3580,12 +3658,14 @@ payloadkeys:
         mode: forbidden
     macOS:
       introduced: '15.0'
+      deprecated: '26.4'
       userenrollment:
         mode: forbidden
     tvOS:
       introduced: n/a
     visionOS:
       introduced: '2.4'
+      deprecated: '26.4'
       supervised: true
       userenrollment:
         mode: forbidden
@@ -3922,11 +4002,13 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: '5.0'
+      deprecated: '26.4'
       supervised: true
       userenrollment:
         mode: forbidden
     macOS:
       introduced: '10.13'
+      deprecated: '26.4'
       userenrollment:
         mode: forbidden
     tvOS:
@@ -4235,12 +4317,17 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: '14.5'
+      deprecated: '26.4'
     macOS:
       introduced: '14.0'
+      deprecated: '26.4'
     tvOS:
       introduced: n/a
     visionOS:
       introduced: '2.0'
+      deprecated: '26.4'
+    watchOS:
+      deprecated: '26.4'
   type: <boolean>
   presence: optional
   default: false
@@ -4250,12 +4337,15 @@ payloadkeys:
   supportedOS:
     iOS:
       introduced: '15.0'
+      deprecated: '26.4'
     macOS:
       introduced: n/a
     tvOS:
       introduced: n/a
     visionOS:
       introduced: n/a
+    watchOS:
+      deprecated: '26.4'
   type: <boolean>
   presence: optional
   default: false
@@ -4391,21 +4481,11 @@ payloadkeys:
     max: 1000
   default: 1000
   content: |-
-    The maximum level of app content allowed on the device. Preinstalled (first-party) apps ignore this restriction.
-
-    Possible values, with the U.S. description of the rating level:
-
-    - `1000`: All
-    - `600`: 17+
-    - `300`: 12+
-    - `200`: 9+
-    - `100`: 4+
-    - `0`: None
+    The maximum level of app content allowed on the device. Starting with iOS 26.2, this rating may apply to certain system apps.
 
     Age bands and the number of discrete age values vary by region, but the values are consistent across regions. For example, in a region that defines rating level 14+, its value is guaranteed to be larger than 300 (12+) and smaller than 600 (17+). Also, the value of rating level 15+ is guaranteed to be larger than the assigned value of rating level 14+. For more information about age ratings, see [Age ratings values and definitions](https://developer.apple.com/help/app-store-connect/reference/age-ratings-values-and-definitions).
 
-    Examples of values in other regions include:
-
+    Below is the complete list of age rating values used across all App Store regions.
     - `1000`: All
     - `621`: 21+
     - `620`: 20+

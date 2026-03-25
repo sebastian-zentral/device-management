@@ -27,7 +27,7 @@ payload:
       allowed-scopes:
       - system
     visionOS:
-      introduced: '26.0'
+      introduced: '26.4'
       allowed-enrollments:
       - supervised
       - device

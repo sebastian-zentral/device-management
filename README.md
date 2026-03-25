@@ -8,11 +8,11 @@ This release corresponds to the following OS versions
 
 | OS       | Version |
 |----------|---------|
-| iOS      | 26.2    |
-| macOS    | 26.2    |
-| tvOS     | 26.2    |
-| visionOS | 26.2    |
-| watchOS  | 26.2    |
+| iOS      | 26.4    |
+| macOS    | 26.4    |
+| tvOS     | 26.4    |
+| visionOS | 26.4    |
+| watchOS  | 26.4    |
 
 ## What's Available
 
