@@ -77,6 +77,13 @@ useHead({
 
     <!-- Schema detail -->
     <div v-else-if="schema">
+      <div class="flex items-center justify-between mb-6">
+        <div />
+        <NuxtLink
+          :to="`/builder?schema=${urlPath}`"
+          class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+        >🛠 Open in Builder</NuxtLink>
+      </div>
       <SchemaView :schema="schema as any" :urlPath="urlPath" />
     </div>
 
