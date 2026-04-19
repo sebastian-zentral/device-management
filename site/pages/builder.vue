@@ -7,6 +7,7 @@ useHead({ title: 'Profile Builder — Device Management' })
 type Mode = 'profile' | 'declaration'
 const mode = ref<Mode>('profile')
 const showPicker = ref(false)
+const showImport = ref(false)
 
 // ── MDM Profile ────────────────────────────────────────────────────────────────
 const profileMeta = reactive({
@@ -125,6 +126,65 @@ function buildDeclaration(): string {
   return JSON.stringify(decl, null, 2)
 }
 
+// ── Import .mobileconfig ───────────────────────────────────────────────────────
+const PAYLOAD_META_KEYS = new Set([
+  'PayloadType', 'PayloadVersion', 'PayloadIdentifier', 'PayloadUUID',
+  'PayloadDisplayName', 'PayloadDescription', 'PayloadOrganization',
+  'PayloadEnabled', 'PayloadScope',
+])
+
+// Fetch nav once so we can look up schemas by PayloadType
+const { data: navData } = await useAsyncData('nav', () =>
+  $fetch<Array<{ id: string; urlPrefix: string; schemas: Array<{ slug: string; url: string }> }>>('/api/nav'),
+)
+
+async function schemaForPayloadType(payloadType: string): Promise<Record<string, any>> {
+  const section = navData.value?.find(s => s.id === 'mdm-profiles')
+  const match = section?.schemas.find(s => s.slug === payloadType)
+  if (match) {
+    try {
+      return await $fetch<Record<string, any>>(`/api/schema/mdm/profiles/${payloadType}`)
+    } catch { /* fall through to stub */ }
+  }
+  // Unknown type — return a stub so the form still shows imported values
+  return {
+    title: payloadType,
+    payload: { payloadtype: payloadType },
+    payloadkeys: [],
+    _unknown: true,
+  }
+}
+
+async function handleImport(parsed: Record<string, any>) {
+  // Profile-level metadata
+  profileMeta.PayloadDisplayName = parsed.PayloadDisplayName ?? ''
+  profileMeta.PayloadIdentifier  = parsed.PayloadIdentifier  ?? ''
+  profileMeta.PayloadDescription = parsed.PayloadDescription ?? ''
+  profileMeta.PayloadOrganization= parsed.PayloadOrganization ?? ''
+  profileUuid.value = parsed.PayloadUUID ?? genUuid()
+
+  // Rebuild payload list
+  payloads.value = []
+  for (const rawPayload of (parsed.PayloadContent ?? [])) {
+    const schema = await schemaForPayloadType(rawPayload.PayloadType ?? '')
+    // Strip standard keys; keep everything else as formData
+    const formData: Record<string, any> = {}
+    for (const [k, v] of Object.entries(rawPayload)) {
+      if (!PAYLOAD_META_KEYS.has(k)) formData[k] = v
+    }
+    payloads.value.push({
+      id: genUuid(),
+      uuid: rawPayload.PayloadUUID ?? genUuid(),
+      schema,
+      formData,
+      collapsed: false,
+    })
+  }
+
+  mode.value = 'profile'
+  showImport.value = false
+}
+
 // ── "Open in builder" from schema page ─────────────────────────────────────────
 const route = useRoute()
 const preloadPath = route.query.schema as string | undefined
@@ -149,9 +209,15 @@ if (preloadPath) {
   <div class="flex gap-6 items-start">
     <!-- ── Left: Form ── -->
     <div class="flex-1 min-w-0 space-y-6">
-      <div>
-        <h1 class="text-2xl font-bold text-slate-900 mb-1">Profile Builder</h1>
-        <p class="text-slate-500 text-sm">Build and export Apple device management profiles and declarations.</p>
+      <div class="flex items-start justify-between gap-4">
+        <div>
+          <h1 class="text-2xl font-bold text-slate-900 mb-1">Profile Builder</h1>
+          <p class="text-slate-500 text-sm">Build and export Apple device management profiles and declarations.</p>
+        </div>
+        <button
+          class="shrink-0 flex items-center gap-1.5 px-4 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 text-slate-700 transition-colors"
+          @click="showImport = true"
+        >📥 Import .mobileconfig</button>
       </div>
 
       <!-- Mode tabs -->
@@ -218,14 +284,35 @@ if (preloadPath) {
             >Remove</button>
           </div>
 
-          <div v-if="!entry.collapsed" class="p-4 divide-y divide-slate-100">
-            <BuilderFieldInput
-              v-for="key in (entry.schema.payloadkeys ?? [])"
-              :key="key.key"
-              :keyData="key"
-              :model-value="entry.formData[key.key]"
-              @update:model-value="(v) => updatePayloadKey(entry, key.key, v)"
-            />
+          <div v-if="!entry.collapsed" class="p-4">
+            <!-- Known schema: render form fields -->
+            <div v-if="!entry.schema._unknown" class="divide-y divide-slate-100">
+              <BuilderFieldInput
+                v-for="key in (entry.schema.payloadkeys ?? [])"
+                :key="key.key"
+                :keyData="key"
+                :model-value="entry.formData[key.key]"
+                @update:model-value="(v) => updatePayloadKey(entry, key.key, v)"
+              />
+            </div>
+            <!-- Unknown type: show imported values as editable key-value pairs -->
+            <div v-else>
+              <p class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-3">
+                This payload type is not in the schema library. Imported values are shown below and will be included in the output as-is.
+              </p>
+              <div class="space-y-2">
+                <div
+                  v-for="(val, key) in entry.formData"
+                  :key="key"
+                  class="flex items-start gap-3 text-sm"
+                >
+                  <code class="font-mono font-semibold text-slate-700 shrink-0 min-w-32">{{ key }}</code>
+                  <span class="text-slate-500 font-mono text-xs bg-slate-50 px-2 py-1 rounded border border-slate-200 break-all">
+                    {{ JSON.stringify(val) }}
+                  </span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -314,6 +401,13 @@ if (preloadPath) {
     :mode="mode"
     @select="mode === 'profile' ? addPayload($event) : setDeclSchema($event)"
     @close="showPicker = false"
+  />
+
+  <!-- Import modal -->
+  <BuilderImportPanel
+    v-if="showImport"
+    @import="handleImport"
+    @close="showImport = false"
   />
 </template>
 
