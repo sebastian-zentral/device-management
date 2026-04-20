@@ -64,15 +64,26 @@ function isActive(url: string) {
         <div class="text-base font-bold text-slate-900">Device Management</div>
         <div class="text-xs text-slate-500">Schema Reference</div>
       </NuxtLink>
-      <NuxtLink
-        to="/builder"
-        class="mt-3 flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
-        :class="route.path === '/builder'
-          ? 'bg-blue-600 text-white'
-          : 'bg-slate-200 text-slate-700 hover:bg-slate-300'"
-      >
-        <span>🛠</span> Profile Builder
-      </NuxtLink>
+      <div class="mt-3 flex flex-col gap-1">
+        <NuxtLink
+          to="/builder"
+          class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+          :class="route.path === '/builder'
+            ? 'bg-blue-600 text-white'
+            : 'bg-slate-200 text-slate-700 hover:bg-slate-300'"
+        >
+          <span>🛠</span> Profile Builder
+        </NuxtLink>
+        <NuxtLink
+          to="/validator"
+          class="flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors"
+          :class="route.path === '/validator'
+            ? 'bg-blue-600 text-white'
+            : 'bg-slate-200 text-slate-700 hover:bg-slate-300'"
+        >
+          <span>✓</span> Validator
+        </NuxtLink>
+      </div>
     </div>
 
     <!-- Search -->
