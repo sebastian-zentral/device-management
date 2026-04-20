@@ -218,11 +218,11 @@ if (preloadPath) {
     <div class="flex-1 min-w-0 space-y-6">
       <div class="flex items-start justify-between gap-4">
         <div>
-          <h1 class="text-2xl font-bold text-slate-900 mb-1">Profile Builder</h1>
-          <p class="text-slate-500 text-sm">Build and export Apple device management profiles and declarations.</p>
+          <h1 class="text-2xl font-bold text-ztl-anthracite mb-1">Profile Builder</h1>
+          <p class="text-ztl-anthracite/60 text-sm">Build and export Apple device management profiles and declarations.</p>
         </div>
         <button
-          class="shrink-0 flex items-center gap-1.5 px-4 py-2 text-sm font-medium border border-slate-300 rounded-lg hover:bg-slate-50 text-slate-700 transition-colors"
+          class="shrink-0 flex items-center gap-1.5 px-4 py-2 text-sm font-medium border border-slate-200 rounded-lg hover:bg-slate-50 text-ztl-anthracite transition-colors bg-white"
           @click="showImport = true"
         >📥 Import .mobileconfig</button>
       </div>
@@ -234,8 +234,8 @@ if (preloadPath) {
           :key="m"
           class="px-4 py-1.5 rounded-lg text-sm font-medium transition-colors"
           :class="mode === m
-            ? 'bg-white text-slate-900 shadow-sm'
-            : 'text-slate-500 hover:text-slate-700'"
+            ? 'bg-white text-ztl-anthracite shadow-sm'
+            : 'text-slate-500 hover:text-ztl-anthracite'"
           @click="mode = m"
         >{{ m === 'profile' ? 'MDM Profile' : 'DDM Declaration' }}</button>
       </div>
@@ -252,7 +252,7 @@ if (preloadPath) {
       <template v-if="mode === 'profile'">
         <!-- Profile metadata -->
         <div class="rounded-xl border border-slate-200 overflow-hidden">
-          <div class="px-4 py-3 bg-slate-50 border-b border-slate-200 font-semibold text-slate-700 text-sm">
+          <div class="px-4 py-3 bg-slate-50 border-b border-slate-100 font-semibold text-ztl-anthracite text-sm">
             Profile Metadata
           </div>
           <div class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -290,11 +290,11 @@ if (preloadPath) {
                 class="text-slate-400 text-xs transition-transform"
                 :class="entry.collapsed ? '-rotate-90' : 'rotate-0'"
               >▼</span>
-              <span class="font-semibold text-slate-800 text-sm">{{ entry.schema.title }}</span>
+              <span class="font-semibold text-ztl-anthracite text-sm">{{ entry.schema.title }}</span>
               <code class="font-mono text-xs text-slate-400">{{ entry.schema.payload?.payloadtype }}</code>
             </button>
             <button
-              class="text-slate-400 hover:text-red-500 text-xs font-medium"
+              class="text-slate-400 hover:text-ztl-red text-xs font-medium"
               @click="removePayload(entry.id)"
             >Remove</button>
           </div>
@@ -334,7 +334,7 @@ if (preloadPath) {
 
         <!-- Add payload -->
         <button
-          class="w-full py-3 rounded-xl border-2 border-dashed border-slate-300 text-slate-500 hover:border-blue-400 hover:text-blue-600 text-sm font-medium transition-colors"
+          class="w-full py-3 rounded-xl border-2 border-dashed border-slate-200 text-slate-400 hover:border-ztl-cyan hover:text-ztl-anthracite text-sm font-medium transition-colors bg-white"
           @click="showPicker = true"
         >+ Add Payload</button>
       </template>
@@ -345,7 +345,7 @@ if (preloadPath) {
         <div v-if="!declSchema" class="text-center py-10">
           <p class="text-slate-500 mb-4 text-sm">Choose a declaration type to get started.</p>
           <button
-            class="px-5 py-2.5 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 text-sm"
+            class="px-5 py-2.5 bg-ztl-anthracite text-white rounded-lg font-medium hover:bg-ztl-anthracite/90 text-sm"
             @click="showPicker = true"
           >Select Declaration Type</button>
         </div>
@@ -355,7 +355,7 @@ if (preloadPath) {
           <div class="rounded-xl border border-slate-200 overflow-hidden">
             <div class="flex items-center justify-between px-4 py-3 bg-slate-50 border-b border-slate-200">
               <div>
-                <span class="font-semibold text-slate-800 text-sm">{{ declSchema.title }}</span>
+                <span class="font-semibold text-ztl-anthracite text-sm">{{ declSchema.title }}</span>
                 <code class="ml-2 font-mono text-xs text-slate-400">{{ declSchema.payload?.declarationtype }}</code>
               </div>
               <button class="text-xs text-slate-400 hover:text-blue-600" @click="showPicker = true">Change</button>
@@ -374,7 +374,7 @@ if (preloadPath) {
 
           <!-- Declaration payload keys -->
           <div class="rounded-xl border border-slate-200 overflow-hidden">
-            <div class="px-4 py-3 bg-slate-50 border-b border-slate-200 font-semibold text-slate-700 text-sm">Payload</div>
+            <div class="px-4 py-3 bg-slate-50 border-b border-slate-100 font-semibold text-ztl-anthracite text-sm">Payload</div>
             <div class="p-4 divide-y divide-slate-100">
               <BuilderFieldInput
                 v-for="key in (declSchema.payloadkeys ?? [])"

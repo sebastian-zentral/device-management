@@ -3,10 +3,7 @@ interface NavSchema { slug: string; title: string; url: string }
 interface NavSection { id: string; label: string; group: string; urlPrefix: string; schemas: NavSchema[] }
 
 const props = defineProps<{ mode: 'profile' | 'declaration' }>()
-const emit = defineEmits<{
-  select: [schema: Record<string, any>]
-  close: []
-}>()
+const emit = defineEmits<{ select: [schema: Record<string, any>]; close: [] }>()
 
 const { data: nav } = await useAsyncData('nav', () => $fetch<NavSection[]>('/api/nav'))
 const search = ref('')
@@ -48,41 +45,41 @@ function onBackdrop(e: MouseEvent) {
 
 <template>
   <div
-    class="fixed inset-0 z-50 flex items-center justify-center bg-black/40"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-ztl-navy/60 backdrop-blur-sm"
     @click="onBackdrop"
   >
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 flex flex-col max-h-[80vh] overflow-hidden">
       <!-- Header -->
-      <div class="p-4 border-b border-slate-200 shrink-0">
+      <div class="p-4 border-b border-slate-100 shrink-0">
         <div class="flex items-center justify-between mb-3">
-          <h3 class="font-semibold text-slate-800">
+          <h3 class="font-semibold text-ztl-anthracite">
             Select {{ mode === 'profile' ? 'Profile Type' : 'Declaration Type' }}
           </h3>
-          <button class="text-slate-400 hover:text-slate-600 text-lg leading-none" @click="emit('close')">✕</button>
+          <button class="text-slate-400 hover:text-ztl-anthracite text-lg leading-none" @click="emit('close')">✕</button>
         </div>
         <input
           v-model="search"
           type="text"
           placeholder="Search…"
           autofocus
-          class="w-full px-3 py-2 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+          class="w-full px-3 py-2 rounded-lg border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-ztl-cyan"
         >
       </div>
 
       <!-- List -->
       <div class="overflow-y-auto flex-1">
         <template v-for="section in sections" :key="section.id">
-          <div class="px-4 py-2 text-xs font-bold uppercase tracking-wider text-slate-400 bg-slate-50 sticky top-0 z-10">
+          <div class="px-4 py-2 text-xs font-bold uppercase tracking-wider text-ztl-anthracite/40 bg-slate-50 sticky top-0">
             {{ section.label }}
           </div>
           <button
             v-for="s in section.schemas"
             :key="s.slug"
             :disabled="loading"
-            class="w-full text-left px-4 py-2.5 hover:bg-blue-50 border-b border-slate-50 disabled:opacity-50"
+            class="w-full text-left px-4 py-2.5 hover:bg-ztl-cyan/10 border-b border-slate-50 disabled:opacity-50 transition-colors"
             @click="pick(s)"
           >
-            <div class="font-medium text-slate-800 text-sm">{{ s.title }}</div>
+            <div class="font-medium text-ztl-anthracite text-sm">{{ s.title }}</div>
             <div class="font-mono text-xs text-slate-400 mt-0.5">{{ s.slug }}</div>
           </button>
         </template>

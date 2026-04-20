@@ -96,7 +96,7 @@ useHead({
     <!-- Category index -->
     <div v-else-if="isCategory">
       <div class="mb-6">
-        <h1 class="text-3xl font-bold text-slate-900 mb-4">{{ categoryTitle }}</h1>
+        <h1 class="text-3xl font-bold text-ztl-anthracite mb-4">{{ categoryTitle }}</h1>
         <BuilderPlatformBar
           v-model:platforms="platformContext.platforms"
           v-model:supervised="platformContext.supervised"
@@ -115,9 +115,9 @@ useHead({
           v-for="s in filteredSchemas"
           :key="s.slug"
           :to="s.url"
-          class="block p-4 rounded-lg border border-slate-200 hover:border-blue-300 hover:bg-blue-50 transition-colors"
+          class="block p-4 rounded-lg border border-slate-200 bg-white hover:border-ztl-cyan hover:bg-ztl-cyan/5 transition-colors"
         >
-          <p class="font-medium text-slate-800 text-sm leading-snug">{{ s.title }}</p>
+          <p class="font-medium text-ztl-anthracite text-sm leading-snug">{{ s.title }}</p>
           <p class="font-mono text-xs text-slate-400 mt-1 truncate">{{ s.slug }}</p>
           <div v-if="s.platforms.length" class="flex gap-1 mt-2 flex-wrap">
             <span
@@ -125,7 +125,7 @@ useHead({
               :key="p"
               class="text-xs px-1.5 py-0.5 rounded"
               :class="platformContext.platforms.includes(p)
-                ? 'bg-blue-100 text-blue-700'
+                ? 'bg-ztl-cyan/20 text-ztl-anthracite font-medium'
                 : 'bg-slate-100 text-slate-400'"
             >{{ p }}</span>
           </div>
@@ -148,14 +148,14 @@ useHead({
         />
         <NuxtLink
           :to="`/builder?schema=${urlPath}`"
-          class="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+          class="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 bg-ztl-anthracite text-white rounded-lg text-sm font-medium hover:bg-ztl-anthracite/90 transition-colors"
         >🛠 Open in Builder</NuxtLink>
       </div>
 
       <!-- Schema not available on selected platform(s) -->
       <div
         v-if="unsupportedPlatforms.length"
-        class="mb-6 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700"
+        class="mb-6 px-4 py-3 rounded-xl bg-ztl-red/10 border border-ztl-red/20 text-sm text-ztl-red"
       >
         This schema is not available on
         <strong>{{ unsupportedPlatforms.join(', ') }}</strong>.

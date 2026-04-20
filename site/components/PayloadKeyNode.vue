@@ -16,7 +16,7 @@ const compatibility = computed(() =>
 )
 
 const TYPE_COLORS: Record<string, string> = {
-  '<string>':     'bg-blue-100 text-blue-700',
+  '<string>':     'bg-ztl-cyan/20 text-ztl-anthracite',
   '<integer>':    'bg-amber-100 text-amber-700',
   '<boolean>':    'bg-emerald-100 text-emerald-700',
   '<array>':      'bg-purple-100 text-purple-700',
@@ -27,9 +27,7 @@ const TYPE_COLORS: Record<string, string> = {
   '<any>':        'bg-slate-100 text-slate-600',
 }
 
-function typeColor(t: string) {
-  return TYPE_COLORS[t] ?? 'bg-slate-100 text-slate-600'
-}
+function typeColor(t: string) { return TYPE_COLORS[t] ?? 'bg-slate-100 text-slate-600' }
 </script>
 
 <template>
@@ -40,8 +38,8 @@ function typeColor(t: string) {
     :class="depth > 0 ? 'ml-5 pl-4 border-l border-slate-200' : ''"
   >
     <span class="w-[1em] shrink-0" />
-    <code class="font-mono text-sm text-slate-500 line-through">{{ keyData.key }}</code>
-    <span class="text-xs px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">Not on selected platforms</span>
+    <code class="font-mono text-sm text-slate-400 line-through">{{ keyData.key }}</code>
+    <span class="text-xs px-1.5 py-0.5 rounded bg-slate-100 text-slate-400">Not on selected platforms</span>
   </div>
 
   <div
@@ -54,7 +52,6 @@ function typeColor(t: string) {
       class="flex items-start gap-2 py-2.5 cursor-pointer select-none"
       @click="hasSubkeys && (expanded = !expanded)"
     >
-      <!-- Expand toggle -->
       <span
         v-if="hasSubkeys"
         class="mt-0.5 text-slate-400 transition-transform shrink-0"
@@ -62,10 +59,7 @@ function typeColor(t: string) {
       >▶</span>
       <span v-else class="w-[1em] shrink-0" />
 
-      <!-- Key name -->
-      <code class="font-mono font-semibold text-slate-800 text-sm leading-snug shrink-0">
-        {{ keyData.key }}
-      </code>
+      <code class="font-mono font-semibold text-ztl-anthracite text-sm leading-snug shrink-0">{{ keyData.key }}</code>
       <span v-if="keyData.title" class="text-slate-500 text-sm">— {{ keyData.title }}</span>
 
       <!-- Badges -->
@@ -84,7 +78,7 @@ function typeColor(t: string) {
           v-if="keyData.presence"
           class="text-xs px-1.5 py-0.5 rounded"
           :class="keyData.presence === 'required'
-            ? 'bg-red-100 text-red-700'
+            ? 'bg-ztl-red/15 text-ztl-red'
             : 'bg-slate-100 text-slate-500'"
         >{{ keyData.presence }}</span>
       </div>
@@ -92,20 +86,14 @@ function typeColor(t: string) {
 
     <!-- Key details -->
     <div class="pl-6 pb-2 space-y-1.5 text-sm">
-      <div v-if="keyData.content">
-        <MdContent :text="keyData.content" />
-      </div>
+      <div v-if="keyData.content"><MdContent :text="keyData.content" /></div>
       <div v-if="keyData.default !== undefined" class="text-slate-600">
         <span class="font-medium text-slate-500">Default:</span>
         <code class="ml-1 font-mono text-xs bg-slate-100 px-1 py-0.5 rounded">{{ keyData.default }}</code>
       </div>
       <div v-if="keyData.rangelist?.length" class="text-slate-600">
         <span class="font-medium text-slate-500">Values:</span>
-        <code
-          v-for="v in keyData.rangelist"
-          :key="v"
-          class="ml-1 font-mono text-xs bg-slate-100 px-1 py-0.5 rounded"
-        >{{ v }}</code>
+        <code v-for="v in keyData.rangelist" :key="v" class="ml-1 font-mono text-xs bg-slate-100 px-1 py-0.5 rounded">{{ v }}</code>
       </div>
       <div v-if="keyData.format" class="text-slate-600">
         <span class="font-medium text-slate-500">Format:</span>
