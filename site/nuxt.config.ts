@@ -30,9 +30,33 @@ async function collectRoutes(dir: string, urlPrefix: string, rel = ''): Promise<
 }
 
 export default defineNuxtConfig({
-  modules: ['@nuxtjs/tailwindcss'],
+  modules: ['@nuxtjs/tailwindcss', '@vite-pwa/nuxt'],
   tailwindcss: {
     configPath: './tailwind.config.ts',
+  },
+  pwa: {
+    registerType: 'autoUpdate',
+    manifest: {
+      name: 'Apple Device Management',
+      short_name: 'DevMgmt',
+      description: 'Build and validate MDM profiles and Declarative Device Management configurations',
+      theme_color: '#79C6BC',
+      background_color: '#F5F4FF',
+      display: 'standalone',
+      start_url: '/',
+      icons: [
+        { src: '/pwa-icon-192.png', sizes: '192x192', type: 'image/png' },
+        { src: '/pwa-icon-512.png', sizes: '512x512', type: 'image/png' },
+        { src: '/pwa-icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
+      ],
+    },
+    workbox: {
+      navigateFallback: null,
+      globPatterns: ['**/*.{js,css,html,svg,png,woff2}'],
+    },
+    client: {
+      installPrompt: true,
+    },
   },
   nitro: {
     prerender: {

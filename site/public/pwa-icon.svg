@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Background -->
+  <rect width="512" height="512" rx="112" fill="#F5F4FF"/>
+  <!-- Zentral diamond mark: two overlapping rotated squares -->
+  <!-- Cyan diamond (back) -->
+  <rect x="136" y="136" width="200" height="200" rx="12" fill="#79C6BC" transform="rotate(45 236 236)"/>
+  <!-- Red diamond (front, offset) -->
+  <rect x="176" y="176" width="200" height="200" rx="12" fill="#EA5165" transform="rotate(45 276 276)"/>
+</svg>
