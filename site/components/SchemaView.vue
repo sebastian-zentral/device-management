@@ -1,5 +1,11 @@
 <script setup lang="ts">
-const props = defineProps<{ schema: Record<string, any>; urlPath: string }>()
+import type { PlatformContext } from '~/utils/platformCompat'
+
+const props = defineProps<{
+  schema: Record<string, any>
+  urlPath: string
+  platformContext?: PlatformContext
+}>()
 
 const schemaType = computed(() => {
   const p = props.schema.payload
@@ -57,6 +63,7 @@ const KIND_COLORS: Record<string, string> = {
           v-for="key in schema.payloadkeys"
           :key="key.key"
           :keyData="key"
+          :platformContext="platformContext"
         />
       </div>
     </section>
@@ -69,6 +76,7 @@ const KIND_COLORS: Record<string, string> = {
           v-for="key in schema.responsekeys"
           :key="key.key"
           :keyData="key"
+          :platformContext="platformContext"
         />
       </div>
     </section>

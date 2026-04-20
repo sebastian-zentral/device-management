@@ -63,6 +63,13 @@ function setDeclSchema(schema: Record<string, any>) {
   showPicker.value = false
 }
 
+// ── Platform context ───────────────────────────────────────────────────────────
+const platformContext = reactive({
+  platforms: ['iOS', 'macOS'] as string[],
+  supervised: false,
+  enrollment: 'mdm',
+})
+
 // ── UUID helper ────────────────────────────────────────────────────────────────
 function genUuid(): string {
   if (typeof crypto !== 'undefined' && crypto.randomUUID) return crypto.randomUUID()
@@ -233,6 +240,14 @@ if (preloadPath) {
         >{{ m === 'profile' ? 'MDM Profile' : 'DDM Declaration' }}</button>
       </div>
 
+      <!-- Platform context bar -->
+      <BuilderPlatformBar
+        v-if="mode === 'profile'"
+        v-model:platforms="platformContext.platforms"
+        v-model:supervised="platformContext.supervised"
+        v-model:enrollment="platformContext.enrollment"
+      />
+
       <!-- ── MDM Profile mode ── -->
       <template v-if="mode === 'profile'">
         <!-- Profile metadata -->
@@ -291,6 +306,7 @@ if (preloadPath) {
                 v-for="key in (entry.schema.payloadkeys ?? [])"
                 :key="key.key"
                 :keyData="key"
+                :platformContext="platformContext"
                 :model-value="entry.formData[key.key]"
                 @update:model-value="(v) => updatePayloadKey(entry, key.key, v)"
               />

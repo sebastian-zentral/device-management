@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import { defaultValue } from '~/utils/formInit'
+import { checkCompatibility, type PlatformContext } from '~/utils/platformCompat'
 
-const props = defineProps<{ keyData: Record<string, any> }>()
+const props = defineProps<{
+  keyData: Record<string, any>
+  platformContext?: PlatformContext
+}>()
 const model = defineModel<any>()
 
 const isRequired = computed(() => props.keyData.presence === 'required')
@@ -19,6 +23,11 @@ watch(isEnabled, (enabled) => {
     model.value = defaultValue(props.keyData)
   }
 })
+
+// ── Platform compatibility ─────────────────────────────────────────────────────
+const compatibility = computed(() =>
+  checkCompatibility(props.keyData, props.platformContext, isRequired.value),
+)
 
 // ── Array helpers ─────────────────────────────────────────────────────────────
 const arraySubkey = computed(() => props.keyData.subkeys?.[0] as Record<string, any> | undefined)
@@ -100,8 +109,15 @@ const hint = computed(() => {
 </script>
 
 <template>
-  <div class="py-2.5">
-    <!-- Row: toggle + label + type badge -->
+  <!-- Hidden: key unavailable on all selected platforms -->
+  <div v-if="compatibility.hidden" class="py-1.5 flex items-center gap-2 opacity-40">
+    <span class="w-4 shrink-0" />
+    <code class="font-mono text-sm text-slate-500 line-through">{{ keyData.key }}</code>
+    <span class="text-xs px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">Not on selected platforms</span>
+  </div>
+
+  <div v-else class="py-2.5">
+    <!-- Row: toggle + label + type badge + warnings -->
     <div class="flex items-center gap-2 flex-wrap">
       <input
         v-if="!isRequired"
@@ -124,6 +140,11 @@ const hint = computed(() => {
         {{ keyData.type }}
       </span>
       <span v-if="isRequired" class="text-xs px-1.5 py-0.5 rounded bg-red-100 text-red-600 shrink-0">required</span>
+      <span
+        v-for="w in compatibility.warnings"
+        :key="w"
+        class="text-xs px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 shrink-0"
+      >{{ w }}</span>
     </div>
 
     <!-- Hint -->
@@ -187,6 +208,7 @@ const hint = computed(() => {
               v-for="sub in (arraySubkey?.subkeys ?? []).filter((s: any) => s.key !== 'ANY')"
               :key="sub.key"
               :keyData="sub"
+              :platformContext="platformContext"
               :model-value="item?.[sub.key]"
               @update:model-value="(v) => updateArrayDictItem(i, sub.key, v)"
             />
@@ -234,6 +256,7 @@ const hint = computed(() => {
           v-for="sub in namedSubkeys"
           :key="sub.key"
           :keyData="sub"
+          :platformContext="platformContext"
           :model-value="getSubValue(sub.key)"
           @update:model-value="setSubValue(sub.key, $event)"
         />

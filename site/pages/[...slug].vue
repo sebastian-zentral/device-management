@@ -3,22 +3,25 @@ import { SECTIONS } from '~/utils/sections'
 
 const route = useRoute()
 
+const platformContext = reactive({
+  platforms: ['iOS', 'macOS'] as string[],
+  supervised: false,
+  enrollment: 'mdm',
+})
+
 const urlPath = computed(() =>
   Array.isArray(route.params.slug)
     ? route.params.slug.join('/')
     : route.params.slug ?? '',
 )
 
-// Determine if this is a category index page or a schema detail page
 const matchedSection = computed(() =>
   SECTIONS.find(s => s.urlPrefix === urlPath.value),
 )
 const isCategory = computed(() => !!matchedSection.value)
 
-// Fetch nav for category page
 const { data: nav } = await useAsyncData('nav', () => $fetch('/api/nav'))
 
-// Fetch schema for detail page
 const { data: schema, error } = await useAsyncData(
   `schema-${urlPath.value}`,
   async () => {
@@ -28,11 +31,43 @@ const { data: schema, error } = await useAsyncData(
   { watch: [urlPath] },
 )
 
-// Category schemas from nav
+interface NavSchema {
+  slug: string
+  title: string
+  url: string
+  platforms: string[]
+  constraints: Record<string, { supervised: boolean; requiresdep: boolean; forbidsUserEnrollment: boolean }>
+}
+
 const categorySchemas = computed(() => {
   if (!isCategory.value) return []
-  const section = nav.value?.find(s => s.urlPrefix === urlPath.value)
-  return section?.schemas ?? []
+  const section = nav.value?.find((s: any) => s.urlPrefix === urlPath.value)
+  return (section?.schemas ?? []) as NavSchema[]
+})
+
+function schemaMatchesContext(s: NavSchema): boolean {
+  if (s.platforms.length === 0) return true
+  return s.platforms.some(p => {
+    if (!platformContext.platforms.includes(p)) return false
+    const c = s.constraints[p]
+    if (!c) return true
+    if (!platformContext.supervised && c.supervised) return false
+    if (platformContext.enrollment === 'user' && c.forbidsUserEnrollment) return false
+    if (platformContext.enrollment !== 'dep' && c.requiresdep) return false
+    return true
+  })
+}
+
+const filteredSchemas = computed(() => categorySchemas.value.filter(schemaMatchesContext))
+
+// Schema-level platform support (for detail view banner)
+const unsupportedPlatforms = computed(() => {
+  const s = schema.value as any
+  if (!s?.payload?.supportedOS) return []
+  return platformContext.platforms.filter(p => {
+    const osData = s.payload.supportedOS[p]
+    return osData && osData.introduced === 'n/a'
+  })
 })
 
 const categoryTitle = computed(() => matchedSection.value?.label ?? '')
@@ -60,31 +95,73 @@ useHead({
 
     <!-- Category index -->
     <div v-else-if="isCategory">
-      <h1 class="text-3xl font-bold text-slate-900 mb-2">{{ categoryTitle }}</h1>
-      <p class="text-slate-500 mb-8">{{ categorySchemas.length }} schemas</p>
+      <div class="mb-6">
+        <h1 class="text-3xl font-bold text-slate-900 mb-4">{{ categoryTitle }}</h1>
+        <BuilderPlatformBar
+          v-model:platforms="platformContext.platforms"
+          v-model:supervised="platformContext.supervised"
+          v-model:enrollment="platformContext.enrollment"
+        />
+      </div>
+
+      <p class="text-slate-500 text-sm mb-4">
+        {{ filteredSchemas.length }}
+        <span v-if="filteredSchemas.length !== categorySchemas.length"> of {{ categorySchemas.length }}</span>
+        schemas
+      </p>
+
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         <NuxtLink
-          v-for="s in categorySchemas"
+          v-for="s in filteredSchemas"
           :key="s.slug"
           :to="s.url"
           class="block p-4 rounded-lg border border-slate-200 hover:border-blue-300 hover:bg-blue-50 transition-colors"
         >
           <p class="font-medium text-slate-800 text-sm leading-snug">{{ s.title }}</p>
           <p class="font-mono text-xs text-slate-400 mt-1 truncate">{{ s.slug }}</p>
+          <div v-if="s.platforms.length" class="flex gap-1 mt-2 flex-wrap">
+            <span
+              v-for="p in s.platforms"
+              :key="p"
+              class="text-xs px-1.5 py-0.5 rounded"
+              :class="platformContext.platforms.includes(p)
+                ? 'bg-blue-100 text-blue-700'
+                : 'bg-slate-100 text-slate-400'"
+            >{{ p }}</span>
+          </div>
         </NuxtLink>
       </div>
+
+      <p v-if="filteredSchemas.length === 0" class="text-center py-16 text-slate-400 text-sm">
+        No schemas support the selected platforms.
+      </p>
     </div>
 
     <!-- Schema detail -->
     <div v-else-if="schema">
-      <div class="flex items-center justify-between mb-6">
-        <div />
+      <div class="flex items-center justify-between mb-4 gap-4">
+        <BuilderPlatformBar
+          v-model:platforms="platformContext.platforms"
+          v-model:supervised="platformContext.supervised"
+          v-model:enrollment="platformContext.enrollment"
+          class="flex-1"
+        />
         <NuxtLink
           :to="`/builder?schema=${urlPath}`"
-          class="inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
+          class="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-lg text-sm font-medium hover:bg-blue-700 transition-colors"
         >🛠 Open in Builder</NuxtLink>
       </div>
-      <SchemaView :schema="schema as any" :urlPath="urlPath" />
+
+      <!-- Schema not available on selected platform(s) -->
+      <div
+        v-if="unsupportedPlatforms.length"
+        class="mb-6 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-sm text-red-700"
+      >
+        This schema is not available on
+        <strong>{{ unsupportedPlatforms.join(', ') }}</strong>.
+      </div>
+
+      <SchemaView :schema="schema as any" :urlPath="urlPath" :platformContext="platformContext" />
     </div>
 
     <!-- Loading -->

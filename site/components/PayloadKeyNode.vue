@@ -1,12 +1,19 @@
 <script setup lang="ts">
+import { checkCompatibility, type PlatformContext } from '~/utils/platformCompat'
+
 const props = defineProps<{
   keyData: Record<string, any>
   depth?: number
+  platformContext?: PlatformContext
 }>()
 
 const depth = computed(() => props.depth ?? 0)
 const expanded = ref(true)
 const hasSubkeys = computed(() => props.keyData.subkeys?.length > 0)
+
+const compatibility = computed(() =>
+  checkCompatibility(props.keyData, props.platformContext, props.keyData.presence === 'required'),
+)
 
 const TYPE_COLORS: Record<string, string> = {
   '<string>':     'bg-blue-100 text-blue-700',
@@ -26,9 +33,21 @@ function typeColor(t: string) {
 </script>
 
 <template>
+  <!-- Hidden: unavailable on all selected platforms -->
   <div
+    v-if="compatibility.hidden"
+    class="flex items-center gap-2 py-1.5 opacity-35"
+    :class="depth > 0 ? 'ml-5 pl-4 border-l border-slate-200' : ''"
+  >
+    <span class="w-[1em] shrink-0" />
+    <code class="font-mono text-sm text-slate-500 line-through">{{ keyData.key }}</code>
+    <span class="text-xs px-1.5 py-0.5 rounded bg-slate-100 text-slate-500">Not on selected platforms</span>
+  </div>
+
+  <div
+    v-else
     class="group"
-    :class="[depth > 0 ? 'ml-5 pl-4 border-l border-slate-200' : '']"
+    :class="depth > 0 ? 'ml-5 pl-4 border-l border-slate-200' : ''"
   >
     <!-- Key header row -->
     <div
@@ -51,6 +70,11 @@ function typeColor(t: string) {
 
       <!-- Badges -->
       <div class="flex items-center gap-1.5 flex-wrap ml-auto shrink-0">
+        <span
+          v-for="w in compatibility.warnings"
+          :key="w"
+          class="text-xs px-1.5 py-0.5 rounded bg-amber-100 text-amber-700"
+        >{{ w }}</span>
         <span
           v-if="keyData.type"
           class="font-mono text-xs px-1.5 py-0.5 rounded"
@@ -96,6 +120,7 @@ function typeColor(t: string) {
         :key="sub.key"
         :keyData="sub"
         :depth="depth + 1"
+        :platformContext="platformContext"
       />
     </div>
   </div>

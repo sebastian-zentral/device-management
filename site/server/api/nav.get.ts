@@ -2,10 +2,18 @@ import { readdir, readFile } from 'node:fs/promises'
 import { join } from 'node:path'
 import yaml from 'js-yaml'
 
+interface PlatformConstraints {
+  supervised: boolean
+  requiresdep: boolean
+  forbidsUserEnrollment: boolean
+}
+
 interface NavSchema {
   slug: string
   title: string
   url: string
+  platforms: string[]
+  constraints: Record<string, PlatformConstraints>
 }
 
 interface NavSection {
@@ -53,14 +61,31 @@ async function scanDir(dir: string, urlPrefix: string, relPath = ''): Promise<Na
       const urlSlug = relPath ? `${relPath}/${slug}` : slug
       try {
         const raw = await readFile(join(dir, entry.name), 'utf-8')
-        const parsed = yaml.load(raw) as { title?: string }
+        const parsed = yaml.load(raw) as { title?: string; payload?: { supportedOS?: Record<string, any> } }
+        const supportedOS = parsed?.payload?.supportedOS ?? {}
+
+        const platforms: string[] = []
+        const constraints: Record<string, PlatformConstraints> = {}
+
+        for (const [platform, d] of Object.entries(supportedOS) as [string, any][]) {
+          if (d?.introduced === 'n/a') continue
+          platforms.push(platform)
+          constraints[platform] = {
+            supervised: d?.supervised === true,
+            requiresdep: d?.requiresdep === true,
+            forbidsUserEnrollment: d?.userenrollment?.mode === 'forbidden',
+          }
+        }
+
         schemas.push({
           slug: urlSlug,
           title: parsed?.title ?? urlSlug,
           url: `/${urlPrefix}/${urlSlug}`,
+          platforms,
+          constraints,
         })
       } catch {
-        schemas.push({ slug: urlSlug, title: urlSlug, url: `/${urlPrefix}/${urlSlug}` })
+        schemas.push({ slug: urlSlug, title: urlSlug, url: `/${urlPrefix}/${urlSlug}`, platforms: [], constraints: {} })
       }
     }
   }
