@@ -8,6 +8,7 @@ type Mode = 'profile' | 'declaration'
 const mode = ref<Mode>('profile')
 const showPicker = ref(false)
 const showImport = ref(false)
+const mobileTab = ref<'form' | 'output'>('form')
 
 // ── MDM Profile ────────────────────────────────────────────────────────────────
 const profileMeta = reactive({
@@ -213,9 +214,25 @@ if (preloadPath) {
 </script>
 
 <template>
+  <!-- Mobile tab bar -->
+  <div class="flex md:hidden mb-4 gap-1 p-1 bg-slate-100 rounded-xl">
+    <button
+      v-for="[tab, label] in [['form', 'Form'], ['output', 'Output']]"
+      :key="tab"
+      class="flex-1 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1.5"
+      :class="mobileTab === tab
+        ? 'bg-white text-ztl-anthracite shadow-sm'
+        : 'text-slate-500 hover:text-ztl-anthracite'"
+      @click="mobileTab = (tab as 'form' | 'output')"
+    >
+      {{ label }}
+      <span v-if="tab === 'output' && output" class="w-1.5 h-1.5 rounded-full bg-ztl-cyan" />
+    </button>
+  </div>
+
   <div class="flex gap-6 items-start">
     <!-- ── Left: Form ── -->
-    <div class="flex-1 min-w-0 space-y-6">
+    <div class="flex-1 min-w-0 space-y-6" :class="{ 'hidden md:block': mobileTab === 'output' }">
       <div class="flex items-start justify-between gap-4">
         <div>
           <h1 class="text-2xl font-bold text-ztl-anthracite mb-1">Profile Builder</h1>
@@ -390,7 +407,10 @@ if (preloadPath) {
     </div>
 
     <!-- ── Right: Output ── -->
-    <div class="w-96 shrink-0 sticky top-8">
+    <div
+      class="w-full md:w-96 md:shrink-0 md:sticky md:top-8"
+      :class="{ 'hidden md:block': mobileTab === 'form' }"
+    >
       <div
         class="rounded-xl border border-slate-200 overflow-hidden"
         style="max-height: calc(100vh - 4rem); min-height: 400px;"
