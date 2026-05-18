@@ -173,7 +173,7 @@ function countBySeverity(issues: ValidationIssue[], sev: string) {
             {{ countBySeverity(result.profileIssues, 'warning') }} warnings
           </span>
         </div>
-        <IssueList :issues="result.profileIssues" />
+        <ValidatorIssueList :issues="result.profileIssues" />
       </div>
 
       <!-- Per-payload results -->
@@ -197,7 +197,7 @@ function countBySeverity(issues: ValidationIssue[], sev: string) {
             {{ countBySeverity(payload.issues, 'warning') }} warnings
           </span>
         </div>
-        <IssueList v-if="payload.issues.length" :issues="payload.issues" />
+        <ValidatorIssueList v-if="payload.issues.length" :issues="payload.issues" />
         <div v-else class="px-4 py-3 text-sm text-emerald-600">No issues found.</div>
       </div>
     </div>
