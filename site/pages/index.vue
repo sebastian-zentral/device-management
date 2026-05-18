@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { data: nav } = await useAsyncData('nav', () => $fetch('/api/nav'))
+const { data: nav } = await useAsyncData('nav', () => $fetch(apiUrl('/api/nav')))
 
 const totalSchemas = computed(() =>
   (nav.value ?? []).reduce((sum, s) => sum + s.schemas.length, 0),

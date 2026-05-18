@@ -5,7 +5,7 @@ import { validateProfile, type ProfileValidationResult, type ValidationIssue } f
 useHead({ title: 'Profile Validator — Device Management' })
 
 const { data: navData } = await useAsyncData('nav', () =>
-  $fetch<Array<{ id: string; urlPrefix: string; schemas: Array<{ slug: string }> }>>('/api/nav'),
+  $fetch<Array<{ id: string; urlPrefix: string; schemas: Array<{ slug: string }> }>>(apiUrl('/api/nav')),
 )
 
 const schemaCache = new Map<string, Record<string, any> | null>()
@@ -16,7 +16,7 @@ async function fetchSchema(payloadType: string): Promise<Record<string, any> | n
   const match = section?.schemas.find(s => s.slug === payloadType)
   if (!match) { schemaCache.set(payloadType, null); return null }
   try {
-    const schema = await $fetch<Record<string, any>>(`/api/schema/mdm/profiles/${payloadType}`)
+    const schema = await $fetch<Record<string, any>>(apiUrl(`/api/schema/mdm/profiles/${payloadType}`))
     schemaCache.set(payloadType, schema)
     return schema
   } catch {

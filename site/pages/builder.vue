@@ -177,7 +177,7 @@ const PAYLOAD_META_KEYS = new Set([
 
 // Fetch nav once so we can look up schemas by PayloadType
 const { data: navData } = await useAsyncData('nav', () =>
-  $fetch<Array<{ id: string; urlPrefix: string; schemas: Array<{ slug: string; url: string }> }>>('/api/nav'),
+  $fetch<Array<{ id: string; urlPrefix: string; schemas: Array<{ slug: string; url: string }> }>>(apiUrl('/api/nav')),
 )
 
 async function schemaForPayloadType(payloadType: string): Promise<Record<string, any>> {
@@ -185,7 +185,7 @@ async function schemaForPayloadType(payloadType: string): Promise<Record<string,
   const match = section?.schemas.find(s => s.slug === payloadType)
   if (match) {
     try {
-      return await $fetch<Record<string, any>>(`/api/schema/mdm/profiles/${payloadType}`)
+      return await $fetch<Record<string, any>>(apiUrl(`/api/schema/mdm/profiles/${payloadType}`))
     } catch { /* fall through to stub */ }
   }
   // Unknown type — return a stub so the form still shows imported values
@@ -232,7 +232,7 @@ const route = useRoute()
 const preloadPath = route.query.schema as string | undefined
 if (preloadPath) {
   const data = await useAsyncData(`preload-${preloadPath}`, () =>
-    $fetch<Record<string, any>>(`/api/schema/${preloadPath}`),
+    $fetch<Record<string, any>>(apiUrl(`/api/schema/${preloadPath}`)),
   )
   if (data.data.value) {
     const schema = data.data.value
@@ -520,6 +520,7 @@ if (preloadPath) {
   <BuilderTypePicker
     v-if="showPicker"
     :mode="mode"
+    :platform-context="(mode === 'profile' || mode === 'command') ? platformContext : undefined"
     @select="(s) => { if (mode === 'profile') addPayload(s); else if (mode === 'command') setCmdSchema(s); else setDeclSchema(s) }"
     @close="showPicker = false"
   />

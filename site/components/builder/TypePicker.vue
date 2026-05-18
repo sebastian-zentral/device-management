@@ -1,11 +1,27 @@
 <script setup lang="ts">
-interface NavSchema { slug: string; title: string; url: string }
+import type { PlatformContext } from '~/utils/platformCompat'
+
+interface PlatformConstraints {
+  supervised: boolean
+  requiresdep: boolean
+  forbidsUserEnrollment: boolean
+}
+interface NavSchema {
+  slug: string
+  title: string
+  url: string
+  platforms?: string[]
+  constraints?: Record<string, PlatformConstraints>
+}
 interface NavSection { id: string; label: string; group: string; urlPrefix: string; schemas: NavSchema[] }
 
-const props = defineProps<{ mode: 'profile' | 'declaration' | 'command' }>()
+const props = defineProps<{
+  mode: 'profile' | 'declaration' | 'command'
+  platformContext?: PlatformContext
+}>()
 const emit = defineEmits<{ select: [schema: Record<string, any>]; close: [] }>()
 
-const { data: nav } = await useAsyncData('nav', () => $fetch<NavSection[]>('/api/nav'))
+const { data: nav } = await useAsyncData('nav', () => $fetch<NavSection[]>(apiUrl('/api/nav')))
 const search = ref('')
 const loading = ref(false)
 
@@ -15,15 +31,34 @@ const relevantPrefixes = computed(() => {
   return ['declarative/configurations', 'declarative/activations', 'declarative/assets', 'declarative/management']
 })
 
+function isCompatible(schema: NavSchema): boolean {
+  const ctx = props.platformContext
+  if (!ctx || !ctx.platforms.length) return true
+  if (!schema.platforms || !schema.platforms.length) return true
+
+  const targets = schema.platforms.filter(p => ctx.platforms.includes(p))
+  if (!targets.length) return false
+
+  return targets.some((p) => {
+    const c = schema.constraints?.[p]
+    if (!c) return true
+    if (c.supervised && !ctx.supervised) return false
+    if (c.requiresdep && ctx.enrollment !== 'dep') return false
+    if (c.forbidsUserEnrollment && ctx.enrollment === 'user') return false
+    return true
+  })
+}
+
 const sections = computed(() => {
   const q = search.value.toLowerCase().trim()
   return (nav.value ?? [])
     .filter(s => relevantPrefixes.value.includes(s.urlPrefix))
     .map(s => ({
       ...s,
-      schemas: q
-        ? s.schemas.filter(sc => sc.title.toLowerCase().includes(q) || sc.slug.includes(q))
-        : s.schemas,
+      schemas: s.schemas.filter((sc) => {
+        if (q && !sc.title.toLowerCase().includes(q) && !sc.slug.includes(q)) return false
+        return isCompatible(sc)
+      }),
     }))
     .filter(s => s.schemas.length > 0)
 })
@@ -31,7 +66,7 @@ const sections = computed(() => {
 async function pick(schema: NavSchema) {
   loading.value = true
   try {
-    const data = await $fetch<Record<string, any>>(`/api/schema/${schema.url.replace(/^\//, '')}`)
+    const data = await $fetch<Record<string, any>>(apiUrl(`/api/schema/${schema.url.replace(/^\//, '')}`))
     emit('select', data)
   } finally {
     loading.value = false
