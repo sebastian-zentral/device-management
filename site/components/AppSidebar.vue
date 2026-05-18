@@ -81,7 +81,7 @@ function isActive(url: string) {
             ? 'bg-ztl-cyan text-ztl-anthracite'
             : 'text-ztl-anthracite/70 hover:bg-ztl-anthracite/8 hover:text-ztl-anthracite'"
         >
-          <span class="text-base leading-none">⊞</span> Profile Builder
+          <span class="text-base leading-none">⊞</span> Builder
         </NuxtLink>
         <NuxtLink
           to="/validator"

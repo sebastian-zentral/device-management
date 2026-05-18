@@ -2,18 +2,18 @@
 interface NavSchema { slug: string; title: string; url: string }
 interface NavSection { id: string; label: string; group: string; urlPrefix: string; schemas: NavSchema[] }
 
-const props = defineProps<{ mode: 'profile' | 'declaration' }>()
+const props = defineProps<{ mode: 'profile' | 'declaration' | 'command' }>()
 const emit = defineEmits<{ select: [schema: Record<string, any>]; close: [] }>()
 
 const { data: nav } = await useAsyncData('nav', () => $fetch<NavSection[]>('/api/nav'))
 const search = ref('')
 const loading = ref(false)
 
-const relevantPrefixes = computed(() =>
-  props.mode === 'profile'
-    ? ['mdm/profiles']
-    : ['declarative/configurations', 'declarative/activations', 'declarative/assets', 'declarative/management'],
-)
+const relevantPrefixes = computed(() => {
+  if (props.mode === 'profile') return ['mdm/profiles']
+  if (props.mode === 'command') return ['mdm/commands']
+  return ['declarative/configurations', 'declarative/activations', 'declarative/assets', 'declarative/management']
+})
 
 const sections = computed(() => {
   const q = search.value.toLowerCase().trim()
@@ -53,7 +53,7 @@ function onBackdrop(e: MouseEvent) {
       <div class="p-4 border-b border-slate-100 shrink-0">
         <div class="flex items-center justify-between mb-3">
           <h3 class="font-semibold text-ztl-anthracite">
-            Select {{ mode === 'profile' ? 'Profile Type' : 'Declaration Type' }}
+            Select {{ mode === 'profile' ? 'Profile Type' : mode === 'command' ? 'Command Type' : 'Declaration Type' }}
           </h3>
           <button class="text-slate-400 hover:text-ztl-anthracite text-lg leading-none" @click="emit('close')">✕</button>
         </div>

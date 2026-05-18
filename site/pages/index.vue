@@ -31,11 +31,11 @@ function sectionsForGroup(group: string) {
       >
         <div class="flex items-center gap-3 mb-3">
           <span class="w-9 h-9 rounded-lg bg-ztl-cyan/20 flex items-center justify-center text-ztl-cyan text-lg">⊞</span>
-          <span class="text-xl font-bold text-white">Profile Builder</span>
+          <span class="text-xl font-bold text-white">Builder</span>
         </div>
         <p class="text-sm text-white/60 mb-4">
-          Interactively create MDM profiles and DDM declarations. Pick payloads, fill in fields, and download a ready-to-deploy
-          <code class="bg-white/10 px-1 rounded text-white/80">.mobileconfig</code> file.
+          Interactively create MDM profiles, DDM declarations, and MDM commands. Pick a type, fill in fields, and download a ready-to-deploy
+          <code class="bg-white/10 px-1 rounded text-white/80">.mobileconfig</code> or <code class="bg-white/10 px-1 rounded text-white/80">.plist</code> file.
         </p>
         <div class="inline-flex items-center gap-1 text-sm font-semibold text-ztl-cyan group-hover:gap-2 transition-all">
           Open Builder <span>→</span>

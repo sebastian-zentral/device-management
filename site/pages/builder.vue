@@ -2,9 +2,9 @@
 import { toPlist } from '~/utils/plist'
 import { initFormData } from '~/utils/formInit'
 
-useHead({ title: 'Profile Builder — Device Management' })
+useHead({ title: 'Builder — Device Management' })
 
-type Mode = 'profile' | 'declaration'
+type Mode = 'profile' | 'declaration' | 'command'
 const mode = ref<Mode>('profile')
 const showPicker = ref(false)
 const showImport = ref(false)
@@ -64,6 +64,18 @@ function setDeclSchema(schema: Record<string, any>) {
   showPicker.value = false
 }
 
+// ── MDM Command ────────────────────────────────────────────────────────────────
+const cmdSchema = ref<Record<string, any> | null>(null)
+const cmdUuid = ref(genUuid())
+const cmdFormData = ref<Record<string, any>>({})
+
+function setCmdSchema(schema: Record<string, any>) {
+  cmdSchema.value = schema
+  cmdFormData.value = initFormData(schema.payloadkeys ?? [])
+  cmdUuid.value = genUuid()
+  showPicker.value = false
+}
+
 // ── Platform context ───────────────────────────────────────────────────────────
 const platformContext = reactive({
   platforms: ['iOS', 'macOS'] as string[],
@@ -81,19 +93,28 @@ function genUuid(): string {
 }
 
 // ── Output generation ──────────────────────────────────────────────────────────
-const output = computed(() =>
-  mode.value === 'profile' ? buildProfile() : buildDeclaration(),
-)
+const output = computed(() => {
+  if (mode.value === 'profile') return buildProfile()
+  if (mode.value === 'command') return buildCommand()
+  return buildDeclaration()
+})
 
-const outputFilename = computed(() =>
-  mode.value === 'profile'
-    ? `${(profileMeta.PayloadIdentifier || 'profile').replace(/[^a-zA-Z0-9._-]/g, '_')}.mobileconfig`
-    : `${(declIdentifier.value || 'declaration').replace(/[^a-zA-Z0-9._-]/g, '_')}.json`,
-)
+const outputFilename = computed(() => {
+  if (mode.value === 'profile') {
+    return `${(profileMeta.PayloadIdentifier || 'profile').replace(/[^a-zA-Z0-9._-]/g, '_')}.mobileconfig`
+  }
+  if (mode.value === 'command') {
+    const rt = cmdSchema.value?.payload?.requesttype ?? 'command'
+    return `${rt.replace(/[^a-zA-Z0-9._-]/g, '_')}.plist`
+  }
+  return `${(declIdentifier.value || 'declaration').replace(/[^a-zA-Z0-9._-]/g, '_')}.json`
+})
 
-const outputLabel = computed(() =>
-  mode.value === 'profile' ? 'Plist XML (.mobileconfig)' : 'JSON Declaration',
-)
+const outputLabel = computed(() => {
+  if (mode.value === 'profile') return 'Plist XML (.mobileconfig)'
+  if (mode.value === 'command') return 'Plist XML (MDM Command)'
+  return 'JSON Declaration'
+})
 
 function buildProfile(): string {
   if (!payloads.value.length && !profileMeta.PayloadDisplayName) return ''
@@ -121,6 +142,19 @@ function buildProfile(): string {
   if (profileMeta.PayloadOrganization) profile.PayloadOrganization = profileMeta.PayloadOrganization
 
   return toPlist(profile)
+}
+
+function buildCommand(): string {
+  if (!cmdSchema.value) return ''
+  const requestType = cmdSchema.value.payload?.requesttype ?? ''
+  const command: Record<string, any> = {
+    RequestType: requestType,
+    ...cmdFormData.value,
+  }
+  return toPlist({
+    CommandUUID: cmdUuid.value,
+    Command: command,
+  })
 }
 
 function buildDeclaration(): string {
@@ -202,10 +236,12 @@ if (preloadPath) {
   )
   if (data.data.value) {
     const schema = data.data.value
-    const isDecl = !!schema.payload?.declarationtype
-    if (isDecl) {
+    if (schema.payload?.declarationtype) {
       mode.value = 'declaration'
       setDeclSchema(schema)
+    } else if (schema.payload?.requesttype) {
+      mode.value = 'command'
+      setCmdSchema(schema)
     } else {
       addPayload(schema)
     }
@@ -235,8 +271,8 @@ if (preloadPath) {
     <div class="flex-1 min-w-0 space-y-6" :class="{ 'hidden md:block': mobileTab === 'output' }">
       <div class="flex items-start justify-between gap-4">
         <div>
-          <h1 class="text-2xl font-bold text-ztl-anthracite mb-1">Profile Builder</h1>
-          <p class="text-ztl-anthracite/60 text-sm">Build and export Apple device management profiles and declarations.</p>
+          <h1 class="text-2xl font-bold text-ztl-anthracite mb-1">Builder</h1>
+          <p class="text-ztl-anthracite/60 text-sm">Build and export Apple device management profiles, declarations, and commands.</p>
         </div>
         <button
           class="shrink-0 flex items-center gap-1.5 px-4 py-2 text-sm font-medium border border-slate-200 rounded-lg hover:bg-slate-50 text-ztl-anthracite transition-colors bg-white"
@@ -247,19 +283,19 @@ if (preloadPath) {
       <!-- Mode tabs -->
       <div class="flex gap-1 p-1 bg-slate-100 rounded-xl w-fit">
         <button
-          v-for="m in (['profile', 'declaration'] as Mode[])"
+          v-for="m in (['profile', 'declaration', 'command'] as Mode[])"
           :key="m"
           class="px-4 py-1.5 rounded-lg text-sm font-medium transition-colors"
           :class="mode === m
             ? 'bg-white text-ztl-anthracite shadow-sm'
             : 'text-slate-500 hover:text-ztl-anthracite'"
           @click="mode = m"
-        >{{ m === 'profile' ? 'MDM Profile' : 'DDM Declaration' }}</button>
+        >{{ m === 'profile' ? 'MDM Profile' : m === 'declaration' ? 'DDM Declaration' : 'MDM Command' }}</button>
       </div>
 
       <!-- Platform context bar -->
       <BuilderPlatformBar
-        v-if="mode === 'profile'"
+        v-if="mode === 'profile' || mode === 'command'"
         v-model:platforms="platformContext.platforms"
         v-model:supervised="platformContext.supervised"
         v-model:enrollment="platformContext.enrollment"
@@ -357,7 +393,7 @@ if (preloadPath) {
       </template>
 
       <!-- ── DDM Declaration mode ── -->
-      <template v-else>
+      <template v-else-if="mode === 'declaration'">
         <!-- Select type -->
         <div v-if="!declSchema" class="text-center py-10">
           <p class="text-slate-500 mb-4 text-sm">Choose a declaration type to get started.</p>
@@ -404,6 +440,55 @@ if (preloadPath) {
           </div>
         </template>
       </template>
+
+      <!-- ── MDM Command mode ── -->
+      <template v-else>
+        <!-- Select type -->
+        <div v-if="!cmdSchema" class="text-center py-10">
+          <p class="text-slate-500 mb-4 text-sm">Choose a command type to get started.</p>
+          <button
+            class="px-5 py-2.5 bg-ztl-anthracite text-white rounded-lg font-medium hover:bg-ztl-anthracite/90 text-sm"
+            @click="showPicker = true"
+          >Select Command Type</button>
+        </div>
+
+        <template v-else>
+          <!-- Command metadata -->
+          <div class="rounded-xl border border-slate-200 overflow-hidden">
+            <div class="flex items-center justify-between px-4 py-3 bg-slate-50 border-b border-slate-200">
+              <div>
+                <span class="font-semibold text-ztl-anthracite text-sm">{{ cmdSchema.title }}</span>
+                <code class="ml-2 font-mono text-xs text-slate-400">{{ cmdSchema.payload?.requesttype }}</code>
+              </div>
+              <button class="text-xs text-slate-400 hover:text-blue-600" @click="showPicker = true">Change</button>
+            </div>
+            <div class="p-4 grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-medium text-slate-600 mb-1">Command UUID</label>
+                <input v-model="cmdUuid" type="text" class="builder-input font-mono" />
+              </div>
+            </div>
+          </div>
+
+          <!-- Command payload keys -->
+          <div v-if="(cmdSchema.payloadkeys ?? []).length" class="rounded-xl border border-slate-200 overflow-hidden">
+            <div class="px-4 py-3 bg-slate-50 border-b border-slate-100 font-semibold text-ztl-anthracite text-sm">Parameters</div>
+            <div class="p-4 divide-y divide-slate-100">
+              <BuilderFieldInput
+                v-for="key in (cmdSchema.payloadkeys ?? [])"
+                :key="key.key"
+                :keyData="key"
+                :platformContext="platformContext"
+                :model-value="cmdFormData[key.key]"
+                @update:model-value="(v) => { if (v === undefined) delete cmdFormData[key.key]; else cmdFormData[key.key] = v }"
+              />
+            </div>
+          </div>
+          <div v-else class="text-xs text-slate-500 bg-slate-50 border border-slate-200 rounded-lg px-3 py-2">
+            This command has no parameters.
+          </div>
+        </template>
+      </template>
     </div>
 
     <!-- ── Right: Output ── -->
@@ -435,7 +520,7 @@ if (preloadPath) {
   <BuilderTypePicker
     v-if="showPicker"
     :mode="mode"
-    @select="mode === 'profile' ? addPayload($event) : setDeclSchema($event)"
+    @select="(s) => { if (mode === 'profile') addPayload(s); else if (mode === 'command') setCmdSchema(s); else setDeclSchema(s) }"
     @close="showPicker = false"
   />
 
