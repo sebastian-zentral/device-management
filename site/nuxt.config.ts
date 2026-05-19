@@ -67,16 +67,19 @@ export default defineNuxtConfig({
   hooks: {
     async 'nitro:config'(nitroConfig) {
       const repoRoot = resolve(process.cwd(), '..')
-      const schemaRoutes: string[] = []
+      const pageRoutes: string[] = []
+      const apiRoutes: string[] = ['/api/nav']
       for (const s of SECTIONS) {
-        const categoryRoute = `/${s.urlPrefix}`
-        schemaRoutes.push(categoryRoute)
+        pageRoutes.push(`/${s.urlPrefix}`)
         const itemRoutes = await collectRoutes(join(repoRoot, s.filePath), s.urlPrefix)
-        schemaRoutes.push(...itemRoutes)
+        pageRoutes.push(...itemRoutes)
+        // Mirror each schema page as a static /api/schema/... JSON file
+        for (const r of itemRoutes) apiRoutes.push(`/api/schema${r}`)
       }
       nitroConfig.prerender!.routes = [
         ...nitroConfig.prerender!.routes as string[],
-        ...schemaRoutes,
+        ...pageRoutes,
+        ...apiRoutes,
       ]
     },
   },
