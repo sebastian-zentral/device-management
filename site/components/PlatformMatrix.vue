@@ -18,18 +18,37 @@ function rowVal(p: string, key: string) {
   const val = props.supportedOS[p]?.[key]
   if (val === undefined || val === null) return '—'
   if (typeof val === 'boolean') return val ? 'Yes' : 'No'
-  if (typeof val === 'object' && val.mode) return val.mode
+  if (Array.isArray(val)) return val.join(', ')
+  if (typeof val === 'object') {
+    const parts: string[] = []
+    if (val.mode) parts.push(val.mode)
+    if (val.behavior) parts.push(`behavior: ${val.behavior}`)
+    if (val.devicechannel !== undefined) parts.push(`device: ${val.devicechannel ? 'yes' : 'no'}`)
+    if (val.userchannel !== undefined) parts.push(`user: ${val.userchannel ? 'yes' : 'no'}`)
+    if (Array.isArray(val['allowed-scopes'])) parts.push(`scopes: ${val['allowed-scopes'].join('/')}`)
+    return parts.length ? parts.join(' · ') : JSON.stringify(val)
+  }
   return String(val)
 }
 
 const rows = [
-  { key: 'introduced',      label: 'Introduced' },
-  { key: 'supervised',      label: 'Supervised' },
-  { key: 'requiresdep',     label: 'Requires DEP' },
-  { key: 'userapprovedmdm', label: 'User-approved MDM' },
-  { key: 'accessrights',    label: 'Access Rights' },
-  { key: 'userenrollment',  label: 'User Enrollment' },
-  { key: 'multiple',        label: 'Multiple Payloads' },
+  { key: 'introduced',           label: 'Introduced' },
+  { key: 'deprecated',           label: 'Deprecated' },
+  { key: 'removed',              label: 'Removed' },
+  { key: 'beta',                 label: 'Beta' },
+  { key: 'supervised',           label: 'Supervised' },
+  { key: 'requiresdep',          label: 'Requires DEP' },
+  { key: 'userapprovedmdm',      label: 'User-approved MDM' },
+  { key: 'allowmanualinstall',   label: 'Allow Manual Install' },
+  { key: 'accessrights',         label: 'Access Rights' },
+  { key: 'devicechannel',        label: 'Device Channel' },
+  { key: 'userchannel',          label: 'User Channel' },
+  { key: 'multiple',             label: 'Multiple Payloads' },
+  { key: 'userenrollment',       label: 'User Enrollment' },
+  { key: 'sharedipad',           label: 'Shared iPad' },
+  { key: 'allowed-enrollments',  label: 'Allowed Enrollments' },
+  { key: 'allowed-scopes',       label: 'Allowed Scopes' },
+  { key: 'always-skippable',     label: 'Always Skippable' },
 ]
 
 const activeRows = computed(() =>

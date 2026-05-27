@@ -10,6 +10,7 @@ const props = defineProps<{
 const depth = computed(() => props.depth ?? 0)
 const expanded = ref(true)
 const hasSubkeys = computed(() => props.keyData.subkeys?.length > 0)
+const isRecursive = computed(() => props.keyData.subkeys?.$recursive === true)
 
 const compatibility = computed(() =>
   checkCompatibility(props.keyData, props.platformContext, props.keyData.presence === 'required'),
@@ -28,6 +29,23 @@ const TYPE_COLORS: Record<string, string> = {
 }
 
 function typeColor(t: string) { return TYPE_COLORS[t] ?? 'bg-slate-100 text-slate-600' }
+
+const PLATFORM_ORDER = ['iOS', 'macOS', 'tvOS', 'visionOS', 'watchOS']
+
+const keySupportedOS = computed(() => {
+  const sos = props.keyData.supportedOS as Record<string, any> | undefined
+  if (!sos) return []
+  return PLATFORM_ORDER
+    .filter(p => sos[p])
+    .map(p => {
+      const parts: string[] = []
+      if (sos[p].introduced) parts.push(`introduced ${sos[p].introduced}`)
+      if (sos[p].deprecated) parts.push(`deprecated ${sos[p].deprecated}`)
+      if (sos[p].removed)    parts.push(`removed ${sos[p].removed}`)
+      return { platform: p, summary: parts.join(' · ') }
+    })
+    .filter(e => e.summary)
+})
 </script>
 
 <template>
@@ -123,6 +141,29 @@ function typeColor(t: string) { return TYPE_COLORS[t] ?? 'bg-slate-100 text-slat
       <div v-if="keyData.assettypes?.length" class="text-slate-600">
         <span class="font-medium text-slate-500">Asset types:</span>
         <code v-for="a in keyData.assettypes" :key="a" class="ml-1 font-mono text-xs bg-slate-100 px-1 py-0.5 rounded">{{ a }}</code>
+      </div>
+      <div v-if="keyData.subkeytype" class="text-slate-600">
+        <span class="font-medium text-slate-500">Subkey type:</span>
+        <code class="ml-1 font-mono text-xs bg-slate-100 px-1 py-0.5 rounded">{{ keyData.subkeytype }}</code>
+      </div>
+      <div v-if="isRecursive" class="text-slate-600 flex items-center gap-1.5">
+        <span class="text-slate-400">↻</span>
+        <span class="font-medium text-slate-500">Recursive</span>
+        <span v-if="keyData.subkeytype">— same structure as
+          <code class="ml-0.5 font-mono text-xs bg-slate-100 px-1 py-0.5 rounded">{{ keyData.subkeytype }}</code>
+        </span>
+      </div>
+      <div v-if="keySupportedOS.length" class="text-slate-600">
+        <span class="font-medium text-slate-500">Per-key availability:</span>
+        <div class="mt-1 flex flex-wrap gap-2">
+          <span
+            v-for="e in keySupportedOS"
+            :key="e.platform"
+            class="text-xs px-1.5 py-0.5 rounded bg-slate-100 text-slate-600"
+          >
+            <span class="font-semibold text-ztl-anthracite">{{ e.platform }}</span>: {{ e.summary }}
+          </span>
+        </div>
       </div>
     </div>
 

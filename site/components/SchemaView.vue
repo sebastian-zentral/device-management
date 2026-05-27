@@ -50,9 +50,15 @@ const KIND_COLORS: Record<string, string> = {
       </div>
       <h1 class="text-3xl font-bold text-ztl-anthracite mb-3">{{ schema.title }}</h1>
       <p v-if="schema.description" class="text-lg text-ztl-anthracite/70">{{ schema.description }}</p>
-      <div v-if="schema.payload?.apply" class="mt-3 text-sm text-slate-600">
-        <span class="font-medium text-slate-500">Apply:</span>
-        <code class="ml-1 font-mono text-xs bg-slate-100 px-1 py-0.5 rounded">{{ schema.payload.apply }}</code>
+      <div class="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-slate-600">
+        <div v-if="schema.payload?.apply">
+          <span class="font-medium text-slate-500">Apply:</span>
+          <code class="ml-1 font-mono text-xs bg-slate-100 px-1 py-0.5 rounded">{{ schema.payload.apply }}</code>
+        </div>
+        <span
+          v-if="schema.payload?.beta"
+          class="text-xs px-1.5 py-0.5 rounded bg-amber-100 text-amber-700 font-semibold"
+        >BETA</span>
       </div>
     </div>
 
@@ -92,6 +98,19 @@ const KIND_COLORS: Record<string, string> = {
           :keyData="key"
           :platformContext="platformContext"
         />
+      </div>
+    </section>
+
+    <!-- Related status items -->
+    <section v-if="schema['related-status-items']?.length" class="mb-8">
+      <h2 class="text-base font-semibold text-ztl-anthracite mb-3 pb-2 border-b border-slate-200">Related Status Items</h2>
+      <div class="space-y-3">
+        <div v-for="(rel, i) in schema['related-status-items']" :key="i" class="text-sm">
+          <div class="flex flex-wrap gap-1.5">
+            <code v-for="s in rel['status-items']" :key="s" class="font-mono text-xs bg-slate-100 px-1.5 py-0.5 rounded">{{ s }}</code>
+          </div>
+          <p v-if="rel.note" class="mt-1 text-slate-600">{{ rel.note }}</p>
+        </div>
       </div>
     </section>
 
