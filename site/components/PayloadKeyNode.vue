@@ -99,6 +99,31 @@ function typeColor(t: string) { return TYPE_COLORS[t] ?? 'bg-slate-100 text-slat
         <span class="font-medium text-slate-500">Format:</span>
         <code class="ml-1 font-mono text-xs bg-slate-100 px-1 py-0.5 rounded">{{ keyData.format }}</code>
       </div>
+      <div v-if="keyData.valuetype" class="text-slate-600">
+        <span class="font-medium text-slate-500">Value type:</span>
+        <code class="ml-1 font-mono text-xs bg-slate-100 px-1 py-0.5 rounded">{{ keyData.valuetype }}</code>
+      </div>
+      <div v-if="keyData.subtype" class="text-slate-600">
+        <span class="font-medium text-slate-500">Subtype:</span>
+        <code class="ml-1 font-mono text-xs bg-slate-100 px-1 py-0.5 rounded">{{ keyData.subtype }}</code>
+        <span class="ml-1 text-xs text-amber-700">(deprecated — use valuetype)</span>
+      </div>
+      <div v-if="keyData.range" class="text-slate-600">
+        <span class="font-medium text-slate-500">Range:</span>
+        <code class="ml-1 font-mono text-xs bg-slate-100 px-1 py-0.5 rounded">{{ keyData.range.min }} … {{ keyData.range.max }}</code>
+      </div>
+      <div v-if="keyData.repetition" class="text-slate-600">
+        <span class="font-medium text-slate-500">Repetition:</span>
+        <code class="ml-1 font-mono text-xs bg-slate-100 px-1 py-0.5 rounded">{{ keyData.repetition.min }} … {{ keyData.repetition.max }}</code>
+      </div>
+      <div v-if="keyData.combinetype" class="text-slate-600">
+        <span class="font-medium text-slate-500">Combine type:</span>
+        <code class="ml-1 font-mono text-xs bg-slate-100 px-1 py-0.5 rounded">{{ keyData.combinetype }}</code>
+      </div>
+      <div v-if="keyData.assettypes?.length" class="text-slate-600">
+        <span class="font-medium text-slate-500">Asset types:</span>
+        <code v-for="a in keyData.assettypes" :key="a" class="ml-1 font-mono text-xs bg-slate-100 px-1 py-0.5 rounded">{{ a }}</code>
+      </div>
     </div>
 
     <!-- Subkeys (recursive) -->
