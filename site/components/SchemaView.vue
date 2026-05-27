@@ -67,6 +67,21 @@ const KIND_COLORS: Record<string, string> = {
       <MdContent :text="schema.payload.content" />
     </section>
 
+    <!-- Notes -->
+    <section v-if="schema.notes?.length" class="mb-8">
+      <h2 class="text-base font-semibold text-ztl-anthracite mb-3 pb-2 border-b border-slate-200">Notes</h2>
+      <div class="space-y-4">
+        <div
+          v-for="(note, i) in schema.notes"
+          :key="i"
+          class="bg-amber-50 border border-amber-200 rounded-lg p-4"
+        >
+          <p v-if="note.title" class="font-semibold text-amber-800 mb-2">{{ note.title }}</p>
+          <MdContent v-if="note.content" :text="note.content" />
+        </div>
+      </div>
+    </section>
+
     <!-- Platform Support -->
     <section v-if="schema.payload?.supportedOS" class="mb-8">
       <h2 class="text-base font-semibold text-ztl-anthracite mb-3 pb-2 border-b border-slate-200">Platform Support</h2>
@@ -134,19 +149,5 @@ const KIND_COLORS: Record<string, string> = {
       </div>
     </section>
 
-    <!-- Notes -->
-    <section v-if="schema.notes?.length" class="mb-8">
-      <h2 class="text-base font-semibold text-ztl-anthracite mb-3 pb-2 border-b border-slate-200">Notes</h2>
-      <div class="space-y-4">
-        <div
-          v-for="(note, i) in schema.notes"
-          :key="i"
-          class="bg-amber-50 border border-amber-200 rounded-lg p-4"
-        >
-          <p v-if="note.title" class="font-semibold text-amber-800 mb-2">{{ note.title }}</p>
-          <MdContent v-if="note.content" :text="note.content" />
-        </div>
-      </div>
-    </section>
   </article>
 </template>
