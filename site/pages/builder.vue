@@ -109,6 +109,7 @@ const showPicker = ref(false)
 const showImport = ref(false)
 const showTfImport = ref(false)
 const showRepoImport = ref(false)
+const showImportMenu = ref(false)
 const importNote = ref('')
 const mobileTab = ref<'form' | 'output'>('form')
 
@@ -563,19 +564,27 @@ if (preloadPath) {
           <h1 class="text-2xl font-bold text-ztl-anthracite mb-1">Builder</h1>
           <p class="text-ztl-anthracite/60 text-sm">Build and export Apple device management profiles, declarations, and commands.</p>
         </div>
-        <div class="shrink-0 flex items-center gap-2">
+        <div class="shrink-0 relative">
           <button
             class="flex items-center gap-1.5 px-4 py-2 text-sm font-medium border border-slate-200 rounded-lg hover:bg-slate-50 text-ztl-anthracite transition-colors bg-white"
-            @click="showImport = true"
-          >📥 Import .mobileconfig</button>
-          <button
-            class="flex items-center gap-1.5 px-4 py-2 text-sm font-medium border border-slate-200 rounded-lg hover:bg-slate-50 text-ztl-anthracite transition-colors bg-white"
-            @click="showTfImport = true"
-          >📥 Import Terraform</button>
-          <button
-            class="flex items-center gap-1.5 px-4 py-2 text-sm font-medium border border-slate-200 rounded-lg hover:bg-slate-50 text-ztl-anthracite transition-colors bg-white"
-            @click="showRepoImport = true"
-          >📁 Import repo</button>
+            @click="showImportMenu = !showImportMenu"
+          >📥 Import <span class="text-xs text-slate-400">▾</span></button>
+
+          <div v-if="showImportMenu" class="fixed inset-0 z-40" @click="showImportMenu = false" />
+          <div
+            v-if="showImportMenu"
+            class="absolute right-0 mt-1 w-60 bg-white border border-slate-200 rounded-lg shadow-lg z-50 py-1"
+          >
+            <button class="w-full text-left px-3 py-2 text-sm text-ztl-anthracite hover:bg-slate-50 flex items-center gap-2" @click="showImportMenu = false; showImport = true">
+              <span>📄</span><span>.mobileconfig file…</span>
+            </button>
+            <button class="w-full text-left px-3 py-2 text-sm text-ztl-anthracite hover:bg-slate-50 flex items-center gap-2" @click="showImportMenu = false; showTfImport = true">
+              <span>🧩</span><span>Terraform block…</span>
+            </button>
+            <button class="w-full text-left px-3 py-2 text-sm text-ztl-anthracite hover:bg-slate-50 flex items-center gap-2" @click="showImportMenu = false; showRepoImport = true">
+              <span>📁</span><span>Repo folder…</span>
+            </button>
+          </div>
         </div>
       </div>
 
