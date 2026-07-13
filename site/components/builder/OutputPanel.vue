@@ -1,5 +1,10 @@
 <script setup lang="ts">
-const props = defineProps<{ content: string; filename: string; label: string }>()
+const props = defineProps<{
+  content: string
+  filename: string
+  label: string
+  extra?: { content: string; filename: string; label: string } | null
+}>()
 
 const copied = ref(false)
 
@@ -9,11 +14,11 @@ async function copy() {
   setTimeout(() => { copied.value = false }, 1500)
 }
 
-function download() {
-  const blob = new Blob([props.content], { type: 'text/plain;charset=utf-8' })
+function downloadFile(content: string, filename: string) {
+  const blob = new Blob([content], { type: 'text/plain;charset=utf-8' })
   const url = URL.createObjectURL(blob)
   const a = document.createElement('a')
-  a.href = url; a.download = props.filename; a.click()
+  a.href = url; a.download = filename; a.click()
   URL.revokeObjectURL(url)
 }
 </script>
@@ -33,8 +38,14 @@ function download() {
         >{{ copied ? 'Copied!' : 'Copy' }}</button>
         <button
           class="text-xs px-3 py-1.5 rounded-md bg-ztl-anthracite text-white hover:bg-ztl-anthracite/90 transition-colors font-medium"
-          @click="download"
+          @click="downloadFile(content, filename)"
         >↓ {{ filename }}</button>
+        <button
+          v-if="extra"
+          class="text-xs px-3 py-1.5 rounded-md border border-ztl-anthracite text-ztl-anthracite hover:bg-slate-50 transition-colors font-medium"
+          :title="`Download the .mobileconfig referenced by filebase64()`"
+          @click="downloadFile(extra.content, extra.filename)"
+        >{{ extra.label }}</button>
       </div>
     </div>
 

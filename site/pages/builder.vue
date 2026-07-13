@@ -9,6 +9,8 @@ import {
   type Channel,
   profilePayloadChannels, combineProfileChannels, declarationChannels, resolveChannel,
 } from '~/utils/channel'
+import { parsePlist } from '~/utils/parsePlist'
+import { parseTerraform, platformsToBuilder } from '~/utils/parseTerraform'
 
 useHead({ title: 'Builder — Device Management' })
 
@@ -34,6 +36,7 @@ watch(mode, () => {
   artifactName.value = ''
   artifactVersion.value = 1
   externalFile.value = false
+  mobileconfigNameOverride.value = ''
   for (const k of ['ios', 'ipados', 'macos', 'tvos'] as const) {
     versionConstraints[k].min = ''
     versionConstraints[k].max = ''
@@ -49,6 +52,19 @@ const artifactName = ref('')
 const artifactVersion = ref(1)
 // Reference an external .mobileconfig via filebase64() instead of inlining it.
 const externalFile = ref(false)
+// Optional override for the external .mobileconfig file name (to match a repo's
+// naming convention, e.g. "santa.tcc.v1.mobileconfig").
+const mobileconfigNameOverride = ref('')
+
+// The .mobileconfig file name referenced by filebase64() and used for the
+// companion download — kept in sync so the pair drops into a repo cleanly.
+const mobileconfigFilename = computed(() => {
+  const slug = tfSlug(artifactName.value || profileMeta.PayloadDisplayName || profileMeta.PayloadIdentifier || 'profile')
+  let n = mobileconfigNameOverride.value.trim()
+  if (!n) return `${slug}.v${artifactVersion.value}.mobileconfig`
+  if (!n.endsWith('.mobileconfig')) n += '.mobileconfig'
+  return n
+})
 // Per-platform min/max OS version constraints on the profile/declaration.
 const versionConstraints = reactive<Record<'ios' | 'ipados' | 'macos' | 'tvos', { min: string; max: string }>>({
   ios: { min: '', max: '' },
@@ -91,6 +107,8 @@ const channel = computed<Channel>(() => {
 })
 const showPicker = ref(false)
 const showImport = ref(false)
+const showTfImport = ref(false)
+const importNote = ref('')
 const mobileTab = ref<'form' | 'output'>('form')
 
 // ── MDM Profile ────────────────────────────────────────────────────────────────
@@ -212,6 +230,16 @@ const outputLabel = computed(() => {
   return 'JSON Declaration'
 })
 
+// Companion .mobileconfig download for external-file Terraform profiles, so the
+// .tf and the file it references (filebase64) can be committed together.
+const outputExtra = computed(() => {
+  if (outputFormat.value === 'terraform' && mode.value === 'profile' && externalFile.value) {
+    const content = buildProfile()
+    if (content) return { content, filename: mobileconfigFilename.value, label: `↓ ${mobileconfigFilename.value}` }
+  }
+  return null
+})
+
 function buildProfile(): string {
   if (!payloads.value.length && !profileMeta.PayloadDisplayName) return ''
 
@@ -273,7 +301,7 @@ function buildProfileTerraform(): string {
   const slug = tfSlug(name || profileMeta.PayloadIdentifier || 'profile')
   const pm = mapPlatforms(platformContext.platforms)
   const version = artifactVersion.value
-  const filePath = `mobileconfigs/${slug}.v${version}.mobileconfig`
+  const filePath = `mobileconfigs/${mobileconfigFilename.value}`
 
   const lines: string[] = []
   if (pm.dropped.length) {
@@ -401,6 +429,69 @@ async function handleImport(parsed: Record<string, any>) {
   showImport.value = false
 }
 
+// ── Import Terraform (reverse builder) ───────────────────────────────────────────
+const DECL_BUCKETS: Record<string, string> = {
+  configuration: 'declarative/configurations',
+  activation: 'declarative/activations',
+  asset: 'declarative/assets',
+  management: 'declarative/management',
+}
+
+async function schemaForDeclarationType(type: string): Promise<Record<string, any>> {
+  const m = /^com\.apple\.(configuration|activation|asset|management)\.(.+)$/.exec(type || '')
+  if (m) {
+    try {
+      return await apiFetch<Record<string, any>>(`/api/schema/${DECL_BUCKETS[m[1]]}/${m[2]}`)
+    } catch { /* fall through to stub */ }
+  }
+  return { title: type, payload: { declarationtype: type }, payloadkeys: [], _unknown: true }
+}
+
+async function handleTfImport(hcl: string) {
+  const result = parseTerraform(hcl)
+  importNote.value = ''
+
+  // Bring the target mode into place first — the mode watcher clears the
+  // Terraform options, so everything below must be applied afterwards.
+  if (result.kind === 'profile') {
+    const src = result.profileSource
+    if (src?.kind === 'xml' && src.xml) {
+      await handleImport(parsePlist(src.xml)) // sets mode = 'profile', payloads, metadata
+    } else {
+      mode.value = 'profile'
+      payloads.value = []
+      profileMeta.PayloadDisplayName = result.artifact.name ?? ''
+      profileMeta.PayloadIdentifier = ''
+      profileMeta.PayloadDescription = ''
+      profileMeta.PayloadOrganization = ''
+      importNote.value = src?.note ?? 'Profile payloads could not be reconstructed from the Terraform alone.'
+    }
+  } else {
+    mode.value = 'declaration'
+    const decl = result.declaration ?? {}
+    declSchema.value = await schemaForDeclarationType(decl.Type ?? '')
+    declIdentifier.value = decl.Identifier ?? ''
+    declServerToken.value = decl.ServerToken ?? ''
+    declFormData.value = decl.Payload ?? {}
+  }
+
+  // Apply the artifact metadata / Terraform options.
+  outputFormat.value = 'terraform'
+  artifactName.value = result.artifact.name ?? ''
+  if (result.version != null) artifactVersion.value = result.version
+  if (result.artifact.channel === 'Device' || result.artifact.channel === 'User') {
+    channelOverride.value = result.artifact.channel
+  }
+  platformContext.platforms = platformsToBuilder(result.artifact.platforms, result.platformBools)
+  externalFile.value = result.kind === 'profile' && result.profileSource?.kind === 'file'
+  for (const k of ['ios', 'ipados', 'macos', 'tvos'] as const) {
+    versionConstraints[k].min = result.constraints[k]?.min ?? ''
+    versionConstraints[k].max = result.constraints[k]?.max ?? ''
+  }
+
+  showTfImport.value = false
+}
+
 // ── "Open in builder" from schema page ─────────────────────────────────────────
 const route = useRoute()
 const preloadPath = route.query.schema as string | undefined
@@ -448,10 +539,22 @@ if (preloadPath) {
           <h1 class="text-2xl font-bold text-ztl-anthracite mb-1">Builder</h1>
           <p class="text-ztl-anthracite/60 text-sm">Build and export Apple device management profiles, declarations, and commands.</p>
         </div>
-        <button
-          class="shrink-0 flex items-center gap-1.5 px-4 py-2 text-sm font-medium border border-slate-200 rounded-lg hover:bg-slate-50 text-ztl-anthracite transition-colors bg-white"
-          @click="showImport = true"
-        >📥 Import .mobileconfig</button>
+        <div class="shrink-0 flex items-center gap-2">
+          <button
+            class="flex items-center gap-1.5 px-4 py-2 text-sm font-medium border border-slate-200 rounded-lg hover:bg-slate-50 text-ztl-anthracite transition-colors bg-white"
+            @click="showImport = true"
+          >📥 Import .mobileconfig</button>
+          <button
+            class="flex items-center gap-1.5 px-4 py-2 text-sm font-medium border border-slate-200 rounded-lg hover:bg-slate-50 text-ztl-anthracite transition-colors bg-white"
+            @click="showTfImport = true"
+          >📥 Import Terraform</button>
+        </div>
+      </div>
+
+      <!-- Import note (e.g. external-file profiles) -->
+      <div v-if="importNote" class="flex items-start gap-2 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+        <span>{{ importNote }}</span>
+        <button class="ml-auto text-amber-500 hover:text-amber-700 leading-none" @click="importNote = ''">✕</button>
       </div>
 
       <!-- Mode tabs -->
@@ -691,6 +794,12 @@ if (preloadPath) {
             Reference an external <code class="font-mono text-xs">.mobileconfig</code> via <code class="font-mono text-xs">filebase64()</code>
           </label>
 
+          <div v-if="mode === 'profile' && externalFile">
+            <label class="block text-xs font-medium text-slate-600 mb-1">Mobileconfig file name</label>
+            <input v-model="mobileconfigNameOverride" type="text" :placeholder="mobileconfigFilename" class="builder-input font-mono" />
+            <p class="text-xs text-slate-400 mt-1">Referenced by <code class="font-mono">filebase64()</code> and used for the companion download. Drop it into <code class="font-mono">mobileconfigs/</code>.</p>
+          </div>
+
           <div v-if="activePlatforms.length">
             <div class="text-xs font-medium text-slate-600 mb-2">OS version constraints <span class="text-slate-400 font-normal">— optional, per platform</span></div>
             <div class="space-y-2">
@@ -736,6 +845,7 @@ if (preloadPath) {
           :content="output"
           :filename="outputFilename"
           :label="outputLabel"
+          :extra="outputExtra"
         />
         <div v-else class="flex items-center justify-center h-64 text-slate-300 text-sm">
           <div class="text-center">
@@ -761,6 +871,13 @@ if (preloadPath) {
     v-if="showImport"
     @import="handleImport"
     @close="showImport = false"
+  />
+
+  <!-- Import Terraform modal -->
+  <BuilderImportTfPanel
+    v-if="showTfImport"
+    @import="handleTfImport"
+    @close="showTfImport = false"
   />
 </template>
 
