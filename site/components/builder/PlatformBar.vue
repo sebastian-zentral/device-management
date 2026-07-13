@@ -1,16 +1,23 @@
 <script setup lang="ts">
 const PLATFORMS = ['iOS', 'macOS', 'tvOS', 'visionOS', 'watchOS'] as const
 
+const CHANNELS = ['Device', 'User'] as const
+
 const props = defineProps<{
   platforms: string[]
   supervised: boolean
   enrollment: string
+  // When provided, a Device/User channel selector is shown. `channelOptions`
+  // lists the channels the loaded schema actually supports; others are disabled.
+  channel?: string
+  channelOptions?: string[]
 }>()
 
 const emit = defineEmits<{
   'update:platforms': [value: string[]]
   'update:supervised': [value: boolean]
   'update:enrollment': [value: string]
+  'update:channel': [value: string]
 }>()
 
 function togglePlatform(p: string) {
@@ -75,5 +82,28 @@ function togglePlatform(p: string) {
         >{{ label }}</button>
       </div>
     </div>
+
+    <!-- Channel segmented control (artifact channel; schema-driven) -->
+    <template v-if="channelOptions">
+      <div class="w-px h-4 bg-slate-200 hidden sm:block" />
+      <div class="flex items-center gap-1.5">
+        <span class="text-xs font-semibold text-ztl-anthracite/50 uppercase tracking-wide">Channel</span>
+        <div class="flex gap-0.5 p-0.5 bg-slate-100 rounded-lg">
+          <button
+            v-for="c in CHANNELS"
+            :key="c"
+            :disabled="!channelOptions.includes(c)"
+            :title="channelOptions.includes(c) ? '' : 'Not supported by this schema on the selected platform(s)'"
+            class="px-2.5 py-0.5 rounded text-xs font-medium transition-colors"
+            :class="channel === c
+              ? 'bg-white text-ztl-navy shadow-sm'
+              : channelOptions.includes(c)
+                ? 'text-slate-500 hover:text-ztl-anthracite'
+                : 'text-slate-300 cursor-not-allowed'"
+            @click="channelOptions.includes(c) && emit('update:channel', c)"
+          >{{ c }}</button>
+        </div>
+      </div>
+    </template>
   </div>
 </template>
