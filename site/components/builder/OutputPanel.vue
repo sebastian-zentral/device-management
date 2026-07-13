@@ -51,7 +51,7 @@ function downloadFile(content: string, filename: string) {
     </div>
 
     <!-- Code -->
-    <div class="flex-1 overflow-hidden bg-slate-50">
+    <div class="flex-1 min-h-0 overflow-hidden bg-slate-50">
       <BuilderCodeEditor :content="content" :lang="lang" />
     </div>
   </div>

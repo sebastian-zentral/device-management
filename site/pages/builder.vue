@@ -874,8 +874,8 @@ if (preloadPath) {
       </div>
 
       <div
-        class="rounded-xl border border-slate-200 overflow-hidden"
-        style="max-height: calc(100vh - 4rem); min-height: 400px;"
+        class="rounded-xl border border-slate-200 overflow-hidden flex flex-col"
+        style="height: calc(100vh - 4rem); min-height: 400px;"
       >
         <BuilderOutputPanel
           v-if="output"

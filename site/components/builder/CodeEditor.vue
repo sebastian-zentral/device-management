@@ -23,6 +23,7 @@ onMounted(async () => {
 
   compartment = new Compartment()
   const theme = EditorView.theme({
+    // Fill the (bounded) code pane; the scroller handles overflow in both axes.
     '&': { backgroundColor: 'transparent', color: '#334155', height: '100%' },
     '.cm-scroller': {
       fontFamily: 'ui-monospace, SFMono-Regular, Menlo, Consolas, monospace',
@@ -70,7 +71,7 @@ onBeforeUnmount(() => { view?.destroy(); view = null })
 
 <template>
   <ClientOnly>
-    <div ref="host" class="h-full overflow-hidden" />
+    <div ref="host" class="h-full" />
     <template #fallback>
       <pre class="p-4 text-xs font-mono text-ztl-anthracite leading-relaxed whitespace-pre overflow-x-auto">{{ content }}</pre>
     </template>
