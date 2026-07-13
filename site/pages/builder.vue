@@ -231,6 +231,13 @@ const outputLabel = computed(() => {
   return 'JSON Declaration'
 })
 
+// Syntax-highlighting language for the output panel.
+const outputLang = computed<'xml' | 'json' | 'hcl'>(() => {
+  if (outputFormat.value === 'terraform' && mode.value !== 'command') return 'hcl'
+  if (mode.value === 'declaration') return 'json'
+  return 'xml' // profile / command native (plist)
+})
+
 // Companion .mobileconfig download for external-file Terraform profiles, so the
 // .tf and the file it references (filebase64) can be committed together.
 const outputExtra = computed(() => {
@@ -866,6 +873,7 @@ if (preloadPath) {
           :content="output"
           :filename="outputFilename"
           :label="outputLabel"
+          :lang="outputLang"
           :extra="outputExtra"
         />
         <div v-else class="flex items-center justify-center h-64 text-slate-300 text-sm">

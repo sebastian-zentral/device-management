@@ -1,10 +1,15 @@
 <script setup lang="ts">
+import { type Lang, highlight } from '~/utils/highlight'
+
 const props = defineProps<{
   content: string
   filename: string
   label: string
+  lang?: Lang
   extra?: { content: string; filename: string; label: string } | null
 }>()
+
+const highlighted = computed(() => highlight(props.content, props.lang))
 
 const copied = ref(false)
 
@@ -51,7 +56,20 @@ function downloadFile(content: string, filename: string) {
 
     <!-- Code -->
     <div class="flex-1 overflow-y-auto bg-slate-50">
-      <pre class="p-4 text-xs font-mono text-ztl-anthracite leading-relaxed whitespace-pre overflow-x-auto">{{ content }}</pre>
+      <pre class="p-4 text-xs font-mono text-ztl-anthracite leading-relaxed whitespace-pre overflow-x-auto" v-html="highlighted" />
     </div>
   </div>
 </template>
+
+<style scoped>
+:deep(.tok-comment) { color: #94a3b8; font-style: italic; }
+:deep(.tok-meta)    { color: #94a3b8; }
+:deep(.tok-tag)     { color: #0369a1; }
+:deep(.tok-key)     { color: #7c3aed; }
+:deep(.tok-attr)    { color: #7c3aed; }
+:deep(.tok-str)     { color: #15803d; }
+:deep(.tok-num)     { color: #b45309; }
+:deep(.tok-bool)    { color: #2563eb; }
+:deep(.tok-keyword) { color: #2563eb; font-weight: 600; }
+:deep(.tok-func)    { color: #0369a1; }
+</style>
