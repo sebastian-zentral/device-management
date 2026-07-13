@@ -10,7 +10,7 @@ import {
   profilePayloadChannels, combineProfileChannels, declarationChannels, resolveChannel,
 } from '~/utils/channel'
 import { parsePlist } from '~/utils/parsePlist'
-import { parseTerraform, platformsToBuilder } from '~/utils/parseTerraform'
+import { type RepoArtifact, type TfImportResult, parseTerraform, platformsToBuilder } from '~/utils/parseTerraform'
 
 useHead({ title: 'Builder — Device Management' })
 
@@ -108,6 +108,7 @@ const channel = computed<Channel>(() => {
 const showPicker = ref(false)
 const showImport = ref(false)
 const showTfImport = ref(false)
+const showRepoImport = ref(false)
 const importNote = ref('')
 const mobileTab = ref<'form' | 'output'>('form')
 
@@ -447,15 +448,15 @@ async function schemaForDeclarationType(type: string): Promise<Record<string, an
   return { title: type, payload: { declarationtype: type }, payloadkeys: [], _unknown: true }
 }
 
-async function handleTfImport(hcl: string) {
-  const result = parseTerraform(hcl)
+// Apply a parsed artifact (from paste or a repo folder) to the builder state.
+// Mode is set first — the mode watcher clears the Terraform options, so metadata
+// must be applied afterwards.
+async function applyParsedArtifact(result: TfImportResult | RepoArtifact) {
   importNote.value = ''
+  const src = result.kind === 'profile' ? result.profileSource : undefined
 
-  // Bring the target mode into place first — the mode watcher clears the
-  // Terraform options, so everything below must be applied afterwards.
   if (result.kind === 'profile') {
-    const src = result.profileSource
-    if (src?.kind === 'xml' && src.xml) {
+    if ((src?.kind === 'xml' || src?.kind === 'template') && src.xml) {
       await handleImport(parsePlist(src.xml)) // sets mode = 'profile', payloads, metadata
     } else {
       mode.value = 'profile'
@@ -464,8 +465,8 @@ async function handleTfImport(hcl: string) {
       profileMeta.PayloadIdentifier = ''
       profileMeta.PayloadDescription = ''
       profileMeta.PayloadOrganization = ''
-      importNote.value = src?.note ?? 'Profile payloads could not be reconstructed from the Terraform alone.'
     }
+    if (src && src.kind !== 'xml' && src.note) importNote.value = src.note
   } else {
     mode.value = 'declaration'
     const decl = result.declaration ?? {}
@@ -483,13 +484,23 @@ async function handleTfImport(hcl: string) {
     channelOverride.value = result.artifact.channel
   }
   platformContext.platforms = platformsToBuilder(result.artifact.platforms, result.platformBools)
-  externalFile.value = result.kind === 'profile' && result.profileSource?.kind === 'file'
+  externalFile.value = !!src?.external
+  mobileconfigNameOverride.value = src?.fileName ?? ''
   for (const k of ['ios', 'ipados', 'macos', 'tvos'] as const) {
     versionConstraints[k].min = result.constraints[k]?.min ?? ''
     versionConstraints[k].max = result.constraints[k]?.max ?? ''
   }
+}
 
+async function handleTfImport(hcl: string) {
+  await applyParsedArtifact(parseTerraform(hcl))
   showTfImport.value = false
+}
+
+async function handleRepoImport(a: RepoArtifact) {
+  await applyParsedArtifact(a)
+  if (a.warnings?.length) importNote.value = [importNote.value, ...a.warnings].filter(Boolean).join(' · ')
+  showRepoImport.value = false
 }
 
 // ── "Open in builder" from schema page ─────────────────────────────────────────
@@ -548,6 +559,10 @@ if (preloadPath) {
             class="flex items-center gap-1.5 px-4 py-2 text-sm font-medium border border-slate-200 rounded-lg hover:bg-slate-50 text-ztl-anthracite transition-colors bg-white"
             @click="showTfImport = true"
           >📥 Import Terraform</button>
+          <button
+            class="flex items-center gap-1.5 px-4 py-2 text-sm font-medium border border-slate-200 rounded-lg hover:bg-slate-50 text-ztl-anthracite transition-colors bg-white"
+            @click="showRepoImport = true"
+          >📁 Import repo</button>
         </div>
       </div>
 
@@ -878,6 +893,13 @@ if (preloadPath) {
     v-if="showTfImport"
     @import="handleTfImport"
     @close="showTfImport = false"
+  />
+
+  <!-- Import repo folder modal -->
+  <BuilderImportRepoPanel
+    v-if="showRepoImport"
+    @pick="handleRepoImport"
+    @close="showRepoImport = false"
   />
 </template>
 

@@ -23,10 +23,14 @@ export interface TfVersionConstraints {
 }
 
 export interface TfProfileSource {
-  kind: 'xml' | 'file' | 'unresolved'
+  kind: 'xml' | 'template' | 'file' | 'unresolved'
   xml?: string
   path?: string
   note?: string
+  // Whether the source referenced an external file (filebase64/templatefile) —
+  // used to restore the external-file toggle and file name on import.
+  external?: boolean
+  fileName?: string
 }
 
 export interface TfImportResult {
@@ -74,15 +78,28 @@ function matchDelim(s: string, open: number, openCh: string, closeCh: string): n
   return -1
 }
 
-/** Extract the body of `resource "<type>" "<label>" { … }` (first match). */
+/** Extract the bodies of every `resource "<type>" "<label>" { … }`. */
+function extractAllBlocks(hcl: string, resourceType: string): { label: string; body: string }[] {
+  const header = new RegExp(`resource\\s+"${resourceType}"\\s+"([^"]+)"\\s*\\{`, 'g')
+  const out: { label: string; body: string }[] = []
+  let m: RegExpExecArray | null
+  while ((m = header.exec(hcl))) {
+    const braceOpen = m.index + m[0].length - 1
+    const close = matchDelim(hcl, braceOpen, '{', '}')
+    if (close < 0) continue
+    out.push({ label: m[1], body: hcl.slice(braceOpen + 1, close) })
+    header.lastIndex = close + 1
+  }
+  return out
+}
+
+/** Extract the body of the first `resource "<type>" "<label>" { … }`. */
 function extractBlock(hcl: string, resourceType: string): { label: string; body: string } | null {
-  const header = new RegExp(`resource\\s+"${resourceType}"\\s+"([^"]+)"\\s*\\{`)
-  const m = header.exec(hcl)
-  if (!m) return null
-  const braceOpen = m.index + m[0].length - 1
-  const close = matchDelim(hcl, braceOpen, '{', '}')
-  if (close < 0) return null
-  return { label: m[1], body: hcl.slice(braceOpen + 1, close) }
+  return extractAllBlocks(hcl, resourceType)[0] ?? null
+}
+
+function basename(p: string): string {
+  return (p.split('/').pop() || p).trim()
 }
 
 // ── Attribute readers ────────────────────────────────────────────────────────
@@ -249,23 +266,36 @@ function decodeBase64Xml(b64: string): string {
   return new TextDecoder().decode(bytes)
 }
 
-function parseProfileSource(body: string): TfProfileSource {
-  // filebase64("...")
+function parseProfileSource(body: string, files?: Record<string, string>): TfProfileSource {
+  // filebase64("…path.mobileconfig")
   const file = /source\s*=\s*filebase64\(\s*"([^"]+)"/.exec(body)
-  if (file) return { kind: 'file', path: file[1], note: 'Source is an external file; import the referenced .mobileconfig to edit its payloads.' }
+  if (file) {
+    const name = basename(file[1])
+    const content = files?.[name]
+    if (content != null) return { kind: 'xml', xml: content, external: true, fileName: name, note: `Loaded from ${name}` }
+    return { kind: 'file', path: file[1], external: true, fileName: name, note: 'Source is an external file; import the referenced .mobileconfig to edit its payloads.' }
+  }
 
   const b64arg = extractCallArg(body, 'base64encode')
   if (b64arg != null) {
+    // base64encode(templatefile("…", { … }))
+    const tf = /templatefile\(\s*"([^"]+)"/.exec(b64arg)
+    if (tf) {
+      const name = basename(tf[1])
+      const content = files?.[name]
+      if (content != null) return { kind: 'template', xml: content, external: true, fileName: name, note: 'Rendered from templatefile(); ${…} variables are left as placeholders.' }
+      return { kind: 'unresolved', path: tf[1], external: true, fileName: name, note: 'Source uses templatefile() whose file was not included.' }
+    }
     // base64encode(<<TAG … TAG)
     const hd = /^<<-?([A-Za-z0-9_]+)\r?\n([\s\S]*?)\r?\n[ \t]*\1\b/.exec(b64arg)
     if (hd) {
       const xml = hd[2].replace(/\$\$\{/g, '${').replace(/%%\{/g, '%{')
-      return { kind: 'xml', xml }
+      return { kind: 'xml', xml, external: false }
     }
     // base64encode("literal")
     const lit = /^"((?:[^"\\]|\\.)*)"$/.exec(b64arg)
-    if (lit) { try { return { kind: 'xml', xml: decodeBase64Xml(unescapeString(lit[1])) } } catch { /* fall */ } }
-    return { kind: 'unresolved', note: 'Source uses templatefile()/expressions that can\'t be resolved from the .tf alone.' }
+    if (lit) { try { return { kind: 'xml', xml: decodeBase64Xml(unescapeString(lit[1])), external: false } } catch { /* fall */ } }
+    return { kind: 'unresolved', note: 'Source uses an expression that can\'t be resolved from the .tf alone.' }
   }
 
   // source = "BASE64LITERAL"
@@ -273,7 +303,7 @@ function parseProfileSource(body: string): TfProfileSource {
   if (lit) {
     try {
       const xml = decodeBase64Xml(unescapeString(lit[1]))
-      if (xml.startsWith('<?xml') || xml.includes('<plist')) return { kind: 'xml', xml }
+      if (xml.startsWith('<?xml') || xml.includes('<plist')) return { kind: 'xml', xml, external: false }
       return { kind: 'unresolved', note: 'Source is base64 but not an XML property list (possibly a binary plist).' }
     } catch { return { kind: 'unresolved', note: 'Could not decode the base64 source.' } }
   }
@@ -281,42 +311,119 @@ function parseProfileSource(body: string): TfProfileSource {
   return { kind: 'unresolved', note: 'Could not find a recognizable source.' }
 }
 
-// ── Public entry point ───────────────────────────────────────────────────────
+// ── Body parsers ─────────────────────────────────────────────────────────────
+
+function parseArtifactBody(body: string): TfArtifact {
+  return {
+    name: readString(body, 'name'),
+    type: readString(body, 'type'),
+    channel: readString(body, 'channel'),
+    platforms: readStringArray(body, 'platforms'),
+  }
+}
+
+function parseCommon(body: string) {
+  return {
+    platformBools: {
+      ios: readBool(body, 'ios'),
+      ipados: readBool(body, 'ipados'),
+      macos: readBool(body, 'macos'),
+      tvos: readBool(body, 'tvos'),
+    },
+    version: readNumber(body, 'version'),
+    constraints: readConstraints(body),
+  }
+}
+
+function parseDeclarationObject(body: string): Record<string, any> {
+  const arg = extractCallArg(body, 'jsonencode')
+  if (arg == null) throw new Error('Declaration has no jsonencode({...}) source.')
+  const declaration = new HclParser(arg).parse()
+  if (!declaration || typeof declaration !== 'object') throw new Error('Could not parse the declaration source object.')
+  return declaration
+}
+
+// ── Public entry points ──────────────────────────────────────────────────────
 
 export function parseTerraform(hcl: string): TfImportResult {
   const artifactBlock = extractBlock(hcl, 'zentral_mdm_artifact')
-  const artifact: TfArtifact = artifactBlock
-    ? {
-        name: readString(artifactBlock.body, 'name'),
-        type: readString(artifactBlock.body, 'type'),
-        channel: readString(artifactBlock.body, 'channel'),
-        platforms: readStringArray(artifactBlock.body, 'platforms'),
-      }
-    : {}
+  const artifact = artifactBlock ? parseArtifactBody(artifactBlock.body) : {}
 
   const profileBlock = extractBlock(hcl, 'zentral_mdm_profile')
   const declBlock = extractBlock(hcl, 'zentral_mdm_declaration')
   const block = profileBlock ?? declBlock
   if (!block) throw new Error('No zentral_mdm_profile or zentral_mdm_declaration resource found.')
 
-  const platformBools = {
-    ios: readBool(block.body, 'ios'),
-    ipados: readBool(block.body, 'ipados'),
-    macos: readBool(block.body, 'macos'),
-    tvos: readBool(block.body, 'tvos'),
-  }
-  const version = readNumber(block.body, 'version')
-  const constraints = readConstraints(block.body)
-
+  const common = parseCommon(block.body)
   if (profileBlock) {
-    return { kind: 'profile', artifact, version, platformBools, constraints, profileSource: parseProfileSource(profileBlock.body) }
+    return { kind: 'profile', artifact, ...common, profileSource: parseProfileSource(profileBlock.body) }
+  }
+  return { kind: 'declaration', artifact, ...common, declaration: parseDeclarationObject(declBlock!.body) }
+}
+
+export interface RepoArtifact {
+  label: string
+  kind: 'profile' | 'declaration'
+  artifactLabel?: string
+  artifact: TfArtifact
+  version?: number
+  platformBools: TfImportResult['platformBools']
+  constraints: TfVersionConstraints
+  profileSource?: TfProfileSource
+  declaration?: Record<string, any>
+  warnings: string[]
+}
+
+export interface RepoParseResult {
+  artifacts: RepoArtifact[]
+  skipped: { kind: string; count: number }[]
+}
+
+const KNOWN_RESOURCES = new Set(['zentral_mdm_artifact', 'zentral_mdm_profile', 'zentral_mdm_declaration'])
+const ARTIFACT_REF = /artifact_id\s*=\s*zentral_mdm_artifact\.([A-Za-z0-9_-]+)\.id/
+
+/**
+ * Parse every MDM profile/declaration artifact across a set of `.tf` files,
+ * resolving profile sources against the uploaded files (keyed by basename).
+ */
+export function parseTerraformRepo(tfSources: string[], files: Record<string, string> = {}): RepoParseResult {
+  const hcl = tfSources.join('\n\n')
+
+  const artifactByLabel = new Map<string, TfArtifact>()
+  for (const b of extractAllBlocks(hcl, 'zentral_mdm_artifact')) artifactByLabel.set(b.label, parseArtifactBody(b.body))
+
+  const artifacts: RepoArtifact[] = []
+
+  for (const b of extractAllBlocks(hcl, 'zentral_mdm_profile')) {
+    const artifactLabel = ARTIFACT_REF.exec(b.body)?.[1]
+    const artifact = (artifactLabel && artifactByLabel.get(artifactLabel)) || {}
+    const src = parseProfileSource(b.body, files)
+    const warnings: string[] = []
+    if (src.kind === 'template') warnings.push('templatefile ${…} variables left as placeholders')
+    if (src.kind === 'file') warnings.push('.mobileconfig not found — metadata only')
+    if (src.kind === 'unresolved') warnings.push(src.note ?? 'source could not be resolved')
+    artifacts.push({ label: b.label, kind: 'profile', artifactLabel, artifact, ...parseCommon(b.body), profileSource: src, warnings })
   }
 
-  const arg = extractCallArg(declBlock!.body, 'jsonencode')
-  if (arg == null) throw new Error('Declaration has no jsonencode({...}) source.')
-  const declaration = new HclParser(arg).parse()
-  if (!declaration || typeof declaration !== 'object') throw new Error('Could not parse the declaration source object.')
-  return { kind: 'declaration', artifact, version, platformBools, constraints, declaration }
+  for (const b of extractAllBlocks(hcl, 'zentral_mdm_declaration')) {
+    const artifactLabel = ARTIFACT_REF.exec(b.body)?.[1]
+    const artifact = (artifactLabel && artifactByLabel.get(artifactLabel)) || {}
+    const warnings: string[] = []
+    let declaration: Record<string, any> = {}
+    try { declaration = parseDeclarationObject(b.body) } catch (e: any) { warnings.push(e.message) }
+    if (JSON.stringify(declaration).includes('var.')) warnings.push('contains var.* placeholders')
+    artifacts.push({ label: b.label, kind: 'declaration', artifactLabel, artifact, ...parseCommon(b.body), declaration, warnings })
+  }
+
+  const counts = new Map<string, number>()
+  for (const m of hcl.matchAll(/resource\s+"([a-z_]+)"/g)) {
+    if (KNOWN_RESOURCES.has(m[1])) continue
+    counts.set(m[1], (counts.get(m[1]) ?? 0) + 1)
+  }
+  const skipped = [...counts.entries()].map(([kind, count]) => ({ kind, count })).sort((a, b) => b.count - a.count)
+
+  artifacts.sort((a, b) => (a.artifact.name || a.label).localeCompare(b.artifact.name || b.label))
+  return { artifacts, skipped }
 }
 
 /** Map provider artifact platforms (macOS/iOS/iPadOS/tvOS) back to builder targets. */
