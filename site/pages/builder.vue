@@ -10,7 +10,7 @@ import {
   profilePayloadChannels, combineProfileChannels, declarationChannels, resolveChannel,
 } from '~/utils/channel'
 import { parsePlist } from '~/utils/parsePlist'
-import { type RepoArtifact, type TfImportResult, parseTerraform, platformsToBuilder } from '~/utils/parseTerraform'
+import { type RepoArtifact, type RepoParseResult, type TfImportResult, parseTerraform, platformsToBuilder } from '~/utils/parseTerraform'
 
 useHead({ title: 'Builder — Device Management' })
 
@@ -497,9 +497,15 @@ async function handleTfImport(hcl: string) {
   showTfImport.value = false
 }
 
+// The parsed repo list persists so the import modal can be reopened to pick
+// another artifact without re-selecting the folder.
+const repoImport = ref<{ result: RepoParseResult; tfFileCount: number; mcFileCount: number } | null>(null)
+const repoPickedLabel = ref('')
+
 async function handleRepoImport(a: RepoArtifact) {
   await applyParsedArtifact(a)
   if (a.warnings?.length) importNote.value = [importNote.value, ...a.warnings].filter(Boolean).join(' · ')
+  repoPickedLabel.value = a.label
   showRepoImport.value = false
 }
 
@@ -898,6 +904,9 @@ if (preloadPath) {
   <!-- Import repo folder modal -->
   <BuilderImportRepoPanel
     v-if="showRepoImport"
+    :initial="repoImport"
+    :picked-label="repoPickedLabel"
+    @parsed="(p) => { repoImport = p; repoPickedLabel = '' }"
     @pick="handleRepoImport"
     @close="showRepoImport = false"
   />

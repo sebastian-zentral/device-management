@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import { type RepoArtifact, type RepoParseResult, parseTerraformRepo } from '~/utils/parseTerraform'
 
-const emit = defineEmits<{ pick: [artifact: RepoArtifact]; close: [] }>()
+interface RepoImport { result: RepoParseResult; tfFileCount: number; mcFileCount: number }
+
+const props = defineProps<{ initial?: RepoImport | null; pickedLabel?: string }>()
+const emit = defineEmits<{ pick: [artifact: RepoArtifact]; parsed: [payload: RepoImport]; close: [] }>()
 
 const folderInput = ref<HTMLInputElement>()
-const result = ref<RepoParseResult | null>(null)
-const tfFileCount = ref(0)
-const mcFileCount = ref(0)
+// Seed from a previously-parsed import so reopening shows the list without
+// re-selecting the folder.
+const result = ref<RepoParseResult | null>(props.initial?.result ?? null)
+const tfFileCount = ref(props.initial?.tfFileCount ?? 0)
+const mcFileCount = ref(props.initial?.mcFileCount ?? 0)
 const busy = ref(false)
 const error = ref('')
 
@@ -28,6 +33,7 @@ async function handleFolder(e: Event) {
     if (!tfSources.length) throw new Error('No .tf files found in the selected folder.')
     result.value = parseTerraformRepo(tfSources, files)
     if (!result.value.artifacts.length) throw new Error('No MDM profile or declaration artifacts found.')
+    emit('parsed', { result: result.value, tfFileCount: tfFileCount.value, mcFileCount: mcFileCount.value })
   } catch (e: any) {
     error.value = e.message ?? 'Failed to read the folder'
   } finally {
@@ -76,7 +82,7 @@ function onBackdrop(e: MouseEvent) {
           <button
             class="w-full py-3 rounded-xl border-2 border-dashed border-slate-200 text-slate-500 hover:border-ztl-cyan hover:text-ztl-anthracite text-sm font-medium transition-colors"
             @click="folderInput?.click()"
-          >📁 Choose a repository folder</button>
+          >📁 {{ result ? 'Choose a different folder' : 'Choose a repository folder' }}</button>
         </div>
 
         <p v-if="busy" class="text-sm text-slate-500">Reading folder…</p>
@@ -95,7 +101,8 @@ function onBackdrop(e: MouseEvent) {
             <button
               v-for="a in result.artifacts"
               :key="a.label"
-              class="w-full flex items-center gap-3 px-4 py-2.5 text-left hover:bg-slate-50 transition-colors"
+              class="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors"
+              :class="a.label === pickedLabel ? 'bg-ztl-cyan/10' : 'hover:bg-slate-50'"
               @click="emit('pick', a)"
             >
               <span
@@ -108,6 +115,7 @@ function onBackdrop(e: MouseEvent) {
                   {{ a.kind === 'declaration' ? a.declaration?.Type : (a.profileSource?.fileName || a.artifact.type) }}
                 </div>
               </div>
+              <span v-if="a.label === pickedLabel" class="shrink-0 text-[10px] font-semibold text-ztl-navy bg-ztl-cyan/20 px-1.5 py-0.5 rounded">Loaded</span>
               <span v-if="a.warnings.length" class="shrink-0 text-amber-500 text-xs" :title="a.warnings.join('; ')">⚠</span>
               <span class="shrink-0 text-slate-300 text-xs">→</span>
             </button>
