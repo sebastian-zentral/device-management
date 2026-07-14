@@ -63,9 +63,9 @@ async function validate() {
 }
 
 function payloadStatus(issues: ValidationIssue[]) {
-  if (issues.some(i => i.severity === 'error'))   return { icon: '✕', class: 'text-ztl-red bg-ztl-red/10 border-ztl-red/30' }
-  if (issues.some(i => i.severity === 'warning')) return { icon: '!', class: 'text-amber-600 bg-amber-50 border-amber-200' }
-  return { icon: '✓', class: 'text-emerald-600 bg-emerald-50 border-emerald-200' }
+  if (issues.some(i => i.severity === 'error'))   return { icon: 'lucide:x', class: 'text-ztl-red bg-ztl-red/10 border-ztl-red/30' }
+  if (issues.some(i => i.severity === 'warning')) return { icon: 'lucide:triangle-alert', class: 'text-amber-600 bg-amber-50 border-amber-200' }
+  return { icon: 'lucide:check', class: 'text-emerald-600 bg-emerald-50 border-emerald-200' }
 }
 
 function countBySeverity(issues: ValidationIssue[], sev: string) {
@@ -96,7 +96,7 @@ function countBySeverity(issues: ValidationIssue[], sev: string) {
         @click="fileInput?.click()"
       >
         <input ref="fileInput" type="file" accept=".mobileconfig,.plist,.xml" class="hidden" @change="onFileChange">
-        <div class="text-3xl mb-2">📋</div>
+        <Icon name="lucide:clipboard-paste" class="w-8 h-8 mx-auto mb-2 text-slate-400" />
         <p class="text-sm font-medium text-ztl-anthracite">
           Drop a <code class="font-mono bg-slate-100 px-1 rounded">.mobileconfig</code> file here or click to browse
         </p>
@@ -145,7 +145,7 @@ function countBySeverity(issues: ValidationIssue[], sev: string) {
             ? 'bg-amber-50 border-amber-200 text-amber-800'
             : 'bg-emerald-50 border-emerald-200 text-emerald-800'"
       >
-        <span class="text-2xl">{{ result.errorCount > 0 ? '✕' : result.warningCount > 0 ? '!' : '✓' }}</span>
+        <Icon :name="result.errorCount > 0 ? 'lucide:circle-x' : result.warningCount > 0 ? 'lucide:circle-alert' : 'lucide:circle-check'" class="w-6 h-6 shrink-0" />
         <div>
           <div v-if="result.errorCount === 0 && result.warningCount === 0">
             Profile is valid — no issues found across {{ result.payloads.length }} payload(s).
@@ -164,9 +164,9 @@ function countBySeverity(issues: ValidationIssue[], sev: string) {
       <div v-if="result.profileIssues.length" class="rounded-xl border border-slate-200 overflow-hidden bg-white">
         <div class="flex items-center gap-3 px-4 py-3 bg-slate-50 border-b border-slate-100">
           <span
-            class="w-6 h-6 rounded-full border flex items-center justify-center text-xs font-bold shrink-0"
+            class="w-6 h-6 rounded-full border flex items-center justify-center shrink-0"
             :class="payloadStatus(result.profileIssues).class"
-          >{{ payloadStatus(result.profileIssues).icon }}</span>
+          ><Icon :name="payloadStatus(result.profileIssues).icon" class="w-3.5 h-3.5" /></span>
           <span class="font-semibold text-ztl-anthracite text-sm">Profile Structure</span>
           <span class="ml-auto text-xs text-slate-400">
             {{ countBySeverity(result.profileIssues, 'error') }} errors,
@@ -184,9 +184,9 @@ function countBySeverity(issues: ValidationIssue[], sev: string) {
       >
         <div class="flex items-center gap-3 px-4 py-3 bg-slate-50 border-b border-slate-100">
           <span
-            class="w-6 h-6 rounded-full border flex items-center justify-center text-xs font-bold shrink-0"
+            class="w-6 h-6 rounded-full border flex items-center justify-center shrink-0"
             :class="payloadStatus(payload.issues).class"
-          >{{ payloadStatus(payload.issues).icon }}</span>
+          ><Icon :name="payloadStatus(payload.issues).icon" class="w-3.5 h-3.5" /></span>
           <div class="min-w-0 flex-1">
             <span class="font-semibold text-ztl-anthracite text-sm">{{ payload.schemaTitle }}</span>
             <code class="ml-2 font-mono text-xs text-slate-400">{{ payload.payloadType }}</code>

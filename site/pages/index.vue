@@ -30,7 +30,7 @@ function sectionsForGroup(group: string) {
         class="group block p-6 rounded-2xl bg-ztl-anthracite hover:bg-ztl-anthracite/90 transition-colors"
       >
         <div class="flex items-center gap-3 mb-3">
-          <span class="w-9 h-9 rounded-lg bg-ztl-cyan/20 flex items-center justify-center text-ztl-cyan text-lg">⊞</span>
+          <span class="w-9 h-9 rounded-lg bg-ztl-cyan/20 flex items-center justify-center text-ztl-cyan"><Icon name="lucide:blocks" class="w-5 h-5" /></span>
           <span class="text-xl font-bold text-white">Builder</span>
         </div>
         <p class="text-sm text-white/60 mb-4">
@@ -38,7 +38,7 @@ function sectionsForGroup(group: string) {
           <code class="bg-white/10 px-1 rounded text-white/80">.mobileconfig</code> or <code class="bg-white/10 px-1 rounded text-white/80">.plist</code> file.
         </p>
         <div class="inline-flex items-center gap-1 text-sm font-semibold text-ztl-cyan group-hover:gap-2 transition-all">
-          Open Builder <span>→</span>
+          Open Builder <Icon name="lucide:arrow-right" class="w-4 h-4" />
         </div>
       </NuxtLink>
 
@@ -47,14 +47,14 @@ function sectionsForGroup(group: string) {
         class="group block p-6 rounded-2xl border-2 border-ztl-cyan bg-ztl-cyan/5 hover:bg-ztl-cyan/10 transition-colors"
       >
         <div class="flex items-center gap-3 mb-3">
-          <span class="w-9 h-9 rounded-lg bg-ztl-cyan/20 flex items-center justify-center text-ztl-anthracite text-lg font-bold">✓</span>
+          <span class="w-9 h-9 rounded-lg bg-ztl-cyan/20 flex items-center justify-center text-ztl-anthracite"><Icon name="lucide:circle-check" class="w-5 h-5" /></span>
           <span class="text-xl font-bold text-ztl-anthracite">Profile Validator</span>
         </div>
         <p class="text-sm text-ztl-anthracite/70 mb-4">
           Paste or drop an existing <code class="bg-ztl-navy/10 px-1 rounded">.mobileconfig</code> file and check it against the schema library. Catch errors, unknown keys, and type mismatches.
         </p>
         <div class="inline-flex items-center gap-1 text-sm font-semibold text-ztl-anthracite group-hover:gap-2 transition-all">
-          Open Validator <span>→</span>
+          Open Validator <Icon name="lucide:arrow-right" class="w-4 h-4" />
         </div>
       </NuxtLink>
     </div>

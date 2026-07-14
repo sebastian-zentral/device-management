@@ -96,7 +96,7 @@ function isActive(url: string) {
             ? 'bg-ztl-cyan text-ztl-anthracite'
             : 'text-ztl-anthracite/70 hover:bg-ztl-anthracite/8 hover:text-ztl-anthracite'"
         >
-          <span class="text-base leading-none">⊞</span> Builder
+          <Icon name="lucide:blocks" class="w-4 h-4" /> Builder
         </NuxtLink>
         <NuxtLink
           to="/validator"
@@ -105,7 +105,7 @@ function isActive(url: string) {
             ? 'bg-ztl-cyan text-ztl-anthracite'
             : 'text-ztl-anthracite/70 hover:bg-ztl-anthracite/8 hover:text-ztl-anthracite'"
         >
-          <span class="text-base leading-none">✓</span> Validator
+          <Icon name="lucide:circle-check" class="w-4 h-4" /> Validator
         </NuxtLink>
       </div>
     </div>
@@ -141,10 +141,10 @@ function isActive(url: string) {
             <span class="text-xs font-bold uppercase tracking-wider text-ztl-anthracite/40">Imported · {{ importedArtifacts.length }}</span>
           </button>
           <button
-            class="shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded border border-ztl-anthracite/15 text-ztl-anthracite/60 hover:bg-ztl-anthracite/8 hover:text-ztl-anthracite transition-colors"
+            class="shrink-0 flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded border border-ztl-anthracite/15 text-ztl-anthracite/60 hover:bg-ztl-anthracite/8 hover:text-ztl-anthracite transition-colors"
             title="Export all imported artifacts (edits included) as a .zip"
             @click="exportAll"
-          >⬇ Export</button>
+          ><Icon name="lucide:file-archive" class="w-3 h-3" /> Export</button>
         </div>
         <div v-if="importExpanded" class="mb-1">
           <button
@@ -161,7 +161,7 @@ function isActive(url: string) {
               :class="a.kind === 'profile' ? 'bg-ztl-cyan/20 text-ztl-navy' : 'bg-purple-100 text-purple-700'"
             >{{ a.kind === 'profile' ? 'P' : 'D' }}</span>
             <span class="truncate flex-1">{{ a.artifact.name || a.label }}</span>
-            <span v-if="a.warnings.length" class="shrink-0 text-amber-500 text-xs" :title="a.warnings.join('; ')">⚠</span>
+            <Icon v-if="a.warnings.length" name="lucide:triangle-alert" class="shrink-0 w-3.5 h-3.5 text-amber-500" :title="a.warnings.join('; ')" />
           </button>
         </div>
         <div class="mx-4 my-2 border-t border-ztl-anthracite/10" />

@@ -73,7 +73,7 @@ function onBackdrop(e: MouseEvent) {
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-2xl mx-4 overflow-hidden flex flex-col" style="max-height: 85vh;">
       <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100 shrink-0">
         <h3 class="font-semibold text-ztl-navy">Import repo folder</h3>
-        <button class="text-slate-400 hover:text-ztl-navy text-lg leading-none" @click="emit('close')">✕</button>
+        <button class="text-slate-400 hover:text-ztl-navy leading-none" @click="emit('close')"><Icon name="lucide:x" class="w-5 h-5" /></button>
       </div>
 
       <div class="p-5 space-y-4 overflow-y-auto">
@@ -96,9 +96,9 @@ function onBackdrop(e: MouseEvent) {
             @change="handleFolder"
           >
           <button
-            class="w-full py-3 rounded-xl border-2 border-dashed border-slate-200 text-slate-500 hover:border-ztl-cyan hover:text-ztl-anthracite text-sm font-medium transition-colors"
+            class="w-full py-3 rounded-xl border-2 border-dashed border-slate-200 text-slate-500 hover:border-ztl-cyan hover:text-ztl-anthracite text-sm font-medium transition-colors flex items-center justify-center gap-2"
             @click="folderInput?.click()"
-          >📁 {{ result ? 'Choose a different folder' : 'Choose a repository folder' }}</button>
+          ><Icon name="lucide:folder" class="w-4 h-4" /> {{ result ? 'Choose a different folder' : 'Choose a repository folder' }}</button>
         </div>
 
         <p v-if="busy" class="text-sm text-slate-500">Reading folder…</p>
@@ -132,8 +132,8 @@ function onBackdrop(e: MouseEvent) {
                 </div>
               </div>
               <span v-if="a.label === pickedLabel" class="shrink-0 text-[10px] font-semibold text-ztl-navy bg-ztl-cyan/20 px-1.5 py-0.5 rounded">Loaded</span>
-              <span v-if="a.warnings.length" class="shrink-0 text-amber-500 text-xs" :title="a.warnings.join('; ')">⚠</span>
-              <span class="shrink-0 text-slate-300 text-xs">→</span>
+              <Icon v-if="a.warnings.length" name="lucide:triangle-alert" class="shrink-0 w-3.5 h-3.5 text-amber-500" :title="a.warnings.join('; ')" />
+              <Icon name="lucide:chevron-right" class="shrink-0 w-3.5 h-3.5 text-slate-300" />
             </button>
           </div>
         </template>

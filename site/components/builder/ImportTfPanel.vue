@@ -48,7 +48,7 @@ function onBackdrop(e: MouseEvent) {
     <div class="bg-white rounded-2xl shadow-2xl w-full max-w-lg mx-4 overflow-hidden">
       <div class="flex items-center justify-between px-5 py-4 border-b border-slate-100">
         <h3 class="font-semibold text-ztl-navy">Import Terraform</h3>
-        <button class="text-slate-400 hover:text-ztl-navy text-lg leading-none" @click="emit('close')">✕</button>
+        <button class="text-slate-400 hover:text-ztl-navy leading-none" @click="emit('close')"><Icon name="lucide:x" class="w-5 h-5" /></button>
       </div>
 
       <div class="p-5 space-y-4">
@@ -69,7 +69,7 @@ function onBackdrop(e: MouseEvent) {
           @click="fileInput?.click()"
         >
           <input ref="fileInput" type="file" accept=".tf,.txt" class="hidden" @change="handleFileChange">
-          <div class="text-3xl mb-2">📂</div>
+          <Icon name="lucide:upload" class="w-8 h-8 mx-auto mb-2 text-slate-400" />
           <p class="text-sm font-medium text-ztl-anthracite">
             Drag & drop a <code class="font-mono bg-slate-100 px-1 rounded">.tf</code> file here
           </p>

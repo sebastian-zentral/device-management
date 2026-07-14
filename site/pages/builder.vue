@@ -245,7 +245,7 @@ const outputLang = computed<'xml' | 'json' | 'hcl'>(() => {
 const outputExtra = computed(() => {
   if (outputFormat.value === 'terraform' && mode.value === 'profile' && externalFile.value) {
     const content = buildProfile()
-    if (content) return { content, filename: mobileconfigFilename.value, label: `↓ ${mobileconfigFilename.value}` }
+    if (content) return { content, filename: mobileconfigFilename.value, label: mobileconfigFilename.value }
   }
   return null
 })
@@ -631,7 +631,7 @@ if (preloadPath) {
           <button
             class="flex items-center gap-1.5 px-4 py-2 text-sm font-medium border border-slate-200 rounded-lg hover:bg-slate-50 text-ztl-anthracite transition-colors bg-white"
             @click="showImportMenu = !showImportMenu"
-          >📥 Import <span class="text-xs text-slate-400">▾</span></button>
+          ><Icon name="lucide:import" class="w-4 h-4" /> Import <Icon name="lucide:chevron-down" class="w-3.5 h-3.5 text-slate-400" /></button>
 
           <div v-if="showImportMenu" class="fixed inset-0 z-40" @click="showImportMenu = false" />
           <div
@@ -639,13 +639,13 @@ if (preloadPath) {
             class="absolute right-0 mt-1 w-60 bg-white border border-slate-200 rounded-lg shadow-lg z-50 py-1"
           >
             <button class="w-full text-left px-3 py-2 text-sm text-ztl-anthracite hover:bg-slate-50 flex items-center gap-2" @click="showImportMenu = false; showImport = true">
-              <span>📄</span><span>.mobileconfig file…</span>
+              <Icon name="lucide:file-text" class="w-4 h-4 text-slate-500" /><span>.mobileconfig file…</span>
             </button>
             <button class="w-full text-left px-3 py-2 text-sm text-ztl-anthracite hover:bg-slate-50 flex items-center gap-2" @click="showImportMenu = false; showTfImport = true">
-              <span>🧩</span><span>Terraform block…</span>
+              <Icon name="lucide:file-code" class="w-4 h-4 text-slate-500" /><span>Terraform block…</span>
             </button>
             <button class="w-full text-left px-3 py-2 text-sm text-ztl-anthracite hover:bg-slate-50 flex items-center gap-2" @click="showImportMenu = false; showRepoImport = true">
-              <span>📁</span><span>Repo folder…</span>
+              <Icon name="lucide:folder" class="w-4 h-4 text-slate-500" /><span>Repo folder…</span>
             </button>
           </div>
         </div>
@@ -654,7 +654,7 @@ if (preloadPath) {
       <!-- Import note (e.g. external-file profiles) -->
       <div v-if="importNote" class="flex items-start gap-2 text-xs text-amber-800 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
         <span>{{ importNote }}</span>
-        <button class="ml-auto text-amber-500 hover:text-amber-700 leading-none" @click="importNote = ''">✕</button>
+        <button class="ml-auto text-amber-500 hover:text-amber-700 leading-none" @click="importNote = ''"><Icon name="lucide:x" class="w-3.5 h-3.5" /></button>
       </div>
 
       <!-- Mode tabs -->
@@ -723,10 +723,11 @@ if (preloadPath) {
               class="flex items-center gap-2 text-left"
               @click="entry.collapsed = !entry.collapsed"
             >
-              <span
-                class="text-slate-400 text-xs transition-transform"
+              <Icon
+                name="lucide:chevron-down"
+                class="w-4 h-4 text-slate-400 transition-transform"
                 :class="entry.collapsed ? '-rotate-90' : 'rotate-0'"
-              >▼</span>
+              />
               <span class="font-semibold text-ztl-anthracite text-sm">{{ entry.schema.title }}</span>
               <code class="font-mono text-xs text-slate-400">{{ entry.schema.payload?.payloadtype }}</code>
             </button>
@@ -938,7 +939,7 @@ if (preloadPath) {
         />
         <div v-else class="flex items-center justify-center h-64 text-slate-300 text-sm">
           <div class="text-center">
-            <div class="text-4xl mb-3">📄</div>
+            <Icon name="lucide:file-code" class="w-10 h-10 mx-auto mb-3" />
             <p>Output will appear here</p>
           </div>
         </div>

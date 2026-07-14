@@ -90,7 +90,7 @@ function onBackdrop(e: MouseEvent) {
           <h3 class="font-semibold text-ztl-anthracite">
             Select {{ mode === 'profile' ? 'Profile Type' : mode === 'command' ? 'Command Type' : 'Declaration Type' }}
           </h3>
-          <button class="text-slate-400 hover:text-ztl-anthracite text-lg leading-none" @click="emit('close')">✕</button>
+          <button class="text-slate-400 hover:text-ztl-anthracite leading-none" @click="emit('close')"><Icon name="lucide:x" class="w-5 h-5" /></button>
         </div>
         <input
           v-model="search"

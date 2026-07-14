@@ -87,10 +87,10 @@ useHead({
   <div>
     <!-- 404 -->
     <div v-if="error && !isCategory" class="text-center py-20">
-      <p class="text-6xl mb-4">🔍</p>
+      <Icon name="lucide:file-search" class="w-14 h-14 mx-auto mb-4 text-slate-300" />
       <h1 class="text-2xl font-bold text-slate-700 mb-2">Schema not found</h1>
       <p class="text-slate-500 mb-6 font-mono text-sm">{{ urlPath }}</p>
-      <NuxtLink to="/" class="text-blue-600 hover:underline">← Back to home</NuxtLink>
+      <NuxtLink to="/" class="inline-flex items-center gap-1 text-blue-600 hover:underline"><Icon name="lucide:arrow-left" class="w-4 h-4" /> Back to home</NuxtLink>
     </div>
 
     <!-- Category index -->
@@ -149,7 +149,7 @@ useHead({
         <NuxtLink
           :to="`/builder?schema=${urlPath}`"
           class="shrink-0 inline-flex items-center gap-1.5 px-4 py-2 bg-ztl-anthracite text-white rounded-lg text-sm font-medium hover:bg-ztl-anthracite/90 transition-colors"
-        >🛠 Open in Builder</NuxtLink>
+        ><Icon name="lucide:wrench" class="w-4 h-4" /> Open in Builder</NuxtLink>
       </div>
 
       <!-- Schema not available on selected platform(s) -->

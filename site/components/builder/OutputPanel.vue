@@ -38,16 +38,16 @@ function downloadFile(content: string, filename: string) {
           @click="copy"
         >{{ copied ? 'Copied!' : 'Copy' }}</button>
         <button
-          class="text-[11px] px-2 py-1 rounded bg-ztl-anthracite text-white hover:bg-ztl-anthracite/90 transition-colors font-medium max-w-[14rem] truncate"
+          class="text-[11px] px-2 py-1 rounded bg-ztl-anthracite text-white hover:bg-ztl-anthracite/90 transition-colors font-medium max-w-[14rem] flex items-center gap-1 min-w-0"
           :title="`Download ${filename}`"
           @click="downloadFile(content, filename)"
-        >↓ {{ filename }}</button>
+        ><Icon name="lucide:download" class="w-3 h-3 shrink-0" /> <span class="truncate">{{ filename }}</span></button>
         <button
           v-if="extra"
-          class="text-[11px] px-2 py-1 rounded border border-ztl-anthracite text-ztl-anthracite hover:bg-slate-50 transition-colors font-medium max-w-[14rem] truncate"
+          class="text-[11px] px-2 py-1 rounded border border-ztl-anthracite text-ztl-anthracite hover:bg-slate-50 transition-colors font-medium max-w-[14rem] flex items-center gap-1 min-w-0"
           :title="`Download the .mobileconfig referenced by filebase64()`"
           @click="downloadFile(extra.content, extra.filename)"
-        >{{ extra.label }}</button>
+        ><Icon name="lucide:download" class="w-3 h-3 shrink-0" /> <span class="truncate">{{ extra.filename }}</span></button>
       </div>
     </div>
 

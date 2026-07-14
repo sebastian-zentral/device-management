@@ -214,9 +214,9 @@ const hint = computed(() => {
             @input="updateArrayItem(i, ($event.target as HTMLInputElement).value)"
           >
           <button
-            class="mt-1 text-slate-400 hover:text-ztl-red text-xs font-medium shrink-0"
+            class="mt-1 text-slate-400 hover:text-ztl-red font-medium shrink-0"
             @click="removeArrayItem(i)"
-          >✕</button>
+          ><Icon name="lucide:x" class="w-3.5 h-3.5" /></button>
         </div>
         <button class="text-sm text-ztl-cyan hover:text-ztl-anthracite font-medium" @click="addArrayItem">+ Add item</button>
       </div>

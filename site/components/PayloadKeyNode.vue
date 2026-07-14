@@ -147,7 +147,7 @@ const keySupportedOS = computed(() => {
         <code class="ml-1 font-mono text-xs bg-slate-100 px-1 py-0.5 rounded">{{ keyData.subkeytype }}</code>
       </div>
       <div v-if="isRecursive" class="text-slate-600 flex items-center gap-1.5">
-        <span class="text-slate-400">↻</span>
+        <Icon name="lucide:rotate-cw" class="w-3.5 h-3.5 text-slate-400" />
         <span class="font-medium text-slate-500">Recursive</span>
         <span v-if="keyData.subkeytype">— same structure as
           <code class="ml-0.5 font-mono text-xs bg-slate-100 px-1 py-0.5 rounded">{{ keyData.subkeytype }}</code>

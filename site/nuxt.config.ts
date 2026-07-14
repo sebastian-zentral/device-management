@@ -30,7 +30,7 @@ async function collectRoutes(dir: string, urlPrefix: string, rel = ''): Promise<
 }
 
 export default defineNuxtConfig({
-  modules: ['@nuxtjs/tailwindcss', '@vite-pwa/nuxt'],
+  modules: ['@nuxtjs/tailwindcss', '@vite-pwa/nuxt', '@nuxt/icon'],
   tailwindcss: {
     configPath: './tailwind.config.ts',
   },
