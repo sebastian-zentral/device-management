@@ -1,13 +1,17 @@
 <script setup lang="ts">
 import { toPlist } from '~/utils/plist'
 import { initFormData } from '~/utils/formInit'
-import { tfSlug, mapPlatforms, renderProfileTf, renderDeclarationTf } from '~/utils/terraform'
+import {
+  tfSlug, mapPlatforms, declarationArtifactType,
+  renderProfileTf, renderDeclarationTf,
+  renderArtifactBlock, renderProfileResourceBlock, renderDeclarationResourceBlock,
+} from '~/utils/terraform'
 import {
   type Channel,
   profilePayloadChannels, combineProfileChannels, declarationChannels, resolveChannel,
 } from '~/utils/channel'
 import { parsePlist } from '~/utils/parsePlist'
-import { type RepoArtifact, type TfImportResult, parseTerraform, platformsToBuilder, renderRepoArtifact } from '~/utils/parseTerraform'
+import { type RepoArtifact, type TfImportResult, parseTerraform, platformsToBuilder } from '~/utils/parseTerraform'
 
 useHead({ title: 'Builder — Device Management' })
 
@@ -462,17 +466,32 @@ async function handleTfImport(hcl: string) {
 // and is shown in the left sidebar; picking from either place loads it here.
 const { data: repoImport, pickedLabel: repoPickedLabel, loadRequest: repoLoadRequest, exportRequest: repoExportRequest } = useRepoImport()
 
+// Terraform render of the loaded artifact (independent of the output-view
+// toggle) — snapshotted at load to detect whether the user actually edited it.
+function currentTfRender() {
+  return mode.value === 'profile' ? buildProfileTerraform()
+    : mode.value === 'declaration' ? buildDeclarationTerraform() : ''
+}
+const loadedSnapshot = ref('')
+function formChangedSinceLoad() {
+  return !!repoPickedLabel.value && currentTfRender() !== loadedSnapshot.value
+}
+
 async function handleRepoImport(a: RepoArtifact) {
   // Persist edits to the artifact we're leaving so they survive the switch.
-  if (repoPickedLabel.value && repoPickedLabel.value !== a.label) commitFormToArtifact(repoPickedLabel.value)
+  if (repoPickedLabel.value && repoPickedLabel.value !== a.label && formChangedSinceLoad()) {
+    commitFormToArtifact(repoPickedLabel.value)
+  }
   await applyParsedArtifact(a)
+  await nextTick()
+  loadedSnapshot.value = currentTfRender()
   if (a.warnings?.length) importNote.value = [importNote.value, ...a.warnings].filter(Boolean).join(' · ')
   repoPickedLabel.value = a.label
   showRepoImport.value = false
 }
 
-// Write the current builder form state back onto its imported artifact, so the
-// bulk export reflects edits made across several artifacts.
+// Write the current builder form state back onto its imported artifact and mark
+// it edited, so the export splices the change into the preserved source file.
 function commitFormToArtifact(label: string) {
   const a = repoImport.value?.result.artifacts.find(x => x.label === label)
   if (!a) return
@@ -481,6 +500,7 @@ function commitFormToArtifact(label: string) {
   a.platformBools = pm.bools
   a.version = artifactVersion.value
   a.constraints = JSON.parse(JSON.stringify(versionConstraints))
+  a.edited = true
   if (a.kind === 'profile' && mode.value === 'profile') {
     a.profileSource = { kind: 'xml', xml: buildProfile(), external: externalFile.value, fileName: mobileconfigFilename.value }
   } else if (a.kind === 'declaration' && mode.value === 'declaration') {
@@ -501,35 +521,63 @@ watch(repoLoadRequest, (req) => {
   if (a) handleRepoImport(a)
 }, { immediate: true })
 
-// Export every imported artifact (edits included) as a zip: a combined
-// mdm_artifacts.tf plus the mobileconfigs/ files referenced via filebase64().
+// Re-render the artifact + resource blocks for an edited artifact, preserving
+// its original resource labels so the splice fits the surrounding file.
+function renderEditedBlocks(a: RepoArtifact) {
+  const platforms = platformsToBuilder(a.artifact.platforms, a.platformBools)
+  const channel = a.artifact.channel === 'User' ? 'User' : 'Device'
+  const artifactSlug = a.artifactLabel || a.label
+  const version = a.version ?? 1
+  const constraints = a.constraints ?? {}
+  if (a.kind === 'profile') {
+    const artifactBlock = renderArtifactBlock({ slug: artifactSlug, type: a.artifact.type || 'Profile', name: a.artifact.name || a.label, channel, platforms })
+    const r = renderProfileResourceBlock({
+      slug: a.label, artifactSlug, version, platforms, constraints,
+      external: !!a.profileSource?.external, fileName: a.profileSource?.fileName || `${a.label}.mobileconfig`, profileXml: a.profileSource?.xml || '',
+    })
+    return { artifactBlock, resourceBlock: r.block, mobileconfig: r.mobileconfig }
+  }
+  const at = declarationArtifactType(a.declaration?.Type || '')
+  const artifactBlock = renderArtifactBlock({ slug: artifactSlug, type: a.artifact.type || at.type, name: a.artifact.name || a.label, channel, platforms })
+  const resourceBlock = renderDeclarationResourceBlock({ slug: a.label, artifactSlug, version, platforms, constraints, declaration: a.declaration ?? {} })
+  return { artifactBlock, resourceBlock, mobileconfig: undefined as { name: string; content: string } | undefined }
+}
+
+// Export the whole uploaded config: every original file preserved verbatim,
+// with only the artifacts you edited spliced back into their source files.
 watch(repoExportRequest, (n) => { if (n) exportAll() })
 
 async function exportAll() {
   if (!repoImport.value) return
-  if (repoPickedLabel.value) commitFormToArtifact(repoPickedLabel.value)
+  if (formChangedSinceLoad()) commitFormToArtifact(repoPickedLabel.value)
 
-  const tfBlocks: string[] = []
-  const skipped: string[] = []
+  const files: Record<string, string> = { ...(repoImport.value.files ?? {}) }
+  let edited = 0
+  for (const a of repoImport.value.result.artifacts) {
+    if (!a.edited) continue
+    edited++
+    const parts = renderEditedBlocks(a)
+    for (const key of Object.keys(files)) {
+      if (a.artifactBlockText && files[key].includes(a.artifactBlockText)) files[key] = files[key].replace(a.artifactBlockText, () => parts.artifactBlock)
+      if (a.resourceBlockText && files[key].includes(a.resourceBlockText)) files[key] = files[key].replace(a.resourceBlockText, () => parts.resourceBlock)
+    }
+    if (parts.mobileconfig) {
+      const name = parts.mobileconfig.name
+      const key = Object.keys(files).find(k => k === name || k.endsWith('/' + name)) ?? `mobileconfigs/${name}`
+      files[key] = parts.mobileconfig.content
+    }
+  }
+
   const JSZip = (await import('jszip')).default
   const zip = new JSZip()
-  for (const a of repoImport.value.result.artifacts) {
-    const r = renderRepoArtifact(a)
-    if (!r) { skipped.push(a.artifact.name || a.label); continue }
-    tfBlocks.push(r.tf)
-    if (r.mobileconfig) zip.file(`mobileconfigs/${r.mobileconfig.name}`, r.mobileconfig.content)
-  }
-  zip.file('mdm_artifacts.tf', tfBlocks.join('\n'))
-
+  for (const [path, content] of Object.entries(files)) zip.file(path, content)
   const blob = await zip.generateAsync({ type: 'blob' })
   const url = URL.createObjectURL(blob)
   const el = document.createElement('a')
-  el.href = url; el.download = 'zentral-mdm-artifacts.zip'; el.click()
+  el.href = url; el.download = 'zentral-config.zip'; el.click()
   URL.revokeObjectURL(url)
 
-  importNote.value = skipped.length
-    ? `Exported ${tfBlocks.length} artifact(s). Skipped (source not resolved): ${skipped.join(', ')}`
-    : `Exported ${tfBlocks.length} artifact(s) to zentral-mdm-artifacts.zip.`
+  importNote.value = `Exported ${Object.keys(files).length} file(s) — ${edited} artifact(s) updated with your edits, the rest preserved unchanged.`
 }
 
 // ── "Open in builder" from schema page ─────────────────────────────────────────

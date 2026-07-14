@@ -4,6 +4,9 @@ export interface RepoImportData {
   result: RepoParseResult
   tfFileCount: number
   mcFileCount: number
+  // All uploaded .tf / .mobileconfig files by repo-relative path, preserved so
+  // export can reproduce the whole config with only edited artifacts changed.
+  files: Record<string, string>
 }
 
 // App-wide shared state for a folder import, so the parsed artifact list can be

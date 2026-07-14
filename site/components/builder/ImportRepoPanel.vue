@@ -1,7 +1,15 @@
 <script setup lang="ts">
 import { type RepoArtifact, type RepoParseResult, parseTerraformRepo } from '~/utils/parseTerraform'
 
-interface RepoImport { result: RepoParseResult; tfFileCount: number; mcFileCount: number }
+interface RepoImport { result: RepoParseResult; tfFileCount: number; mcFileCount: number; files: Record<string, string> }
+
+// Path within the repo (drop the top-level folder the browser prepends).
+function repoRelPath(f: File): string {
+  const p = (f as any).webkitRelativePath as string | undefined
+  if (!p) return f.name
+  const i = p.indexOf('/')
+  return i >= 0 ? p.slice(i + 1) : p
+}
 
 const props = defineProps<{ initial?: RepoImport | null; pickedLabel?: string }>()
 const emit = defineEmits<{ pick: [artifact: RepoArtifact]; parsed: [payload: RepoImport]; close: [] }>()
@@ -23,17 +31,25 @@ async function handleFolder(e: Event) {
   result.value = null
   try {
     const tfSources: string[] = []
-    const files: Record<string, string> = {}
+    const mobileconfigs: Record<string, string> = {}   // keyed by basename, for source resolution
+    const files: Record<string, string> = {}           // all .tf/.mobileconfig by repo-relative path, preserved
     for (const f of Array.from(list)) {
-      if (f.name.endsWith('.tf')) tfSources.push(await f.text())
-      else if (f.name.endsWith('.mobileconfig')) files[f.name] = await f.text()
+      if (f.name.endsWith('.tf')) {
+        const text = await f.text()
+        tfSources.push(text)
+        files[repoRelPath(f)] = text
+      } else if (f.name.endsWith('.mobileconfig')) {
+        const text = await f.text()
+        mobileconfigs[f.name] = text
+        files[repoRelPath(f)] = text
+      }
     }
     tfFileCount.value = tfSources.length
-    mcFileCount.value = Object.keys(files).length
+    mcFileCount.value = Object.keys(mobileconfigs).length
     if (!tfSources.length) throw new Error('No .tf files found in the selected folder.')
-    result.value = parseTerraformRepo(tfSources, files)
+    result.value = parseTerraformRepo(tfSources, mobileconfigs)
     if (!result.value.artifacts.length) throw new Error('No MDM profile or declaration artifacts found.')
-    emit('parsed', { result: result.value, tfFileCount: tfFileCount.value, mcFileCount: mcFileCount.value })
+    emit('parsed', { result: result.value, tfFileCount: tfFileCount.value, mcFileCount: mcFileCount.value, files })
   } catch (e: any) {
     error.value = e.message ?? 'Failed to read the folder'
   } finally {

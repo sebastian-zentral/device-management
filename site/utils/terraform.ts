@@ -179,24 +179,32 @@ export interface DeclarationRenderOpts extends BaseRenderOpts {
   declaration: Record<string, any>  // { Type, Identifier, ServerToken, Payload }
 }
 
-export function renderProfileTf(o: ProfileRenderOpts): Rendered {
-  const slug = tfSlug(o.slug || o.name || 'profile')
+// Block-level renderers — used both for full render and for in-place splicing
+// into preserved source files (where the artifact and resource keep their
+// original, possibly-different, labels).
+
+export function renderArtifactBlock(o: { slug: string; type: string; name: string; channel: string; platforms: string[] }): string {
   const pm = mapPlatforms(o.platforms)
-  const filePath = `mobileconfigs/${o.fileName}`
+  return [
+    `resource "zentral_mdm_artifact" "${o.slug}" {`,
+    `  name      = ${tfString(o.name)}`,
+    `  type      = ${tfString(o.type)}`,
+    `  channel   = ${tfString(o.channel)}`,
+    `  platforms = ${tfStringArray(pm.platforms)}`,
+    `}`,
+  ].join('\n')
+}
+
+export function renderProfileResourceBlock(o: {
+  slug: string; artifactSlug: string; version: number; platforms: string[]
+  constraints?: PlatformConstraints; external: boolean; fileName: string; profileXml: string
+}): { block: string; mobileconfig?: { name: string; content: string } } {
+  const pm = mapPlatforms(o.platforms)
   const lines: string[] = []
-  if (pm.dropped.length) lines.push(`# Note: ${pm.dropped.join(', ')} — no Zentral MDM artifact platform equivalent; omitted.`)
-  lines.push(`resource "zentral_mdm_artifact" "${slug}" {`)
-  lines.push(`  name      = ${tfString(o.name)}`)
-  lines.push(`  type      = "Profile"`)
-  lines.push(`  channel   = ${tfString(o.channel)}`)
-  lines.push(`  platforms = ${tfStringArray(pm.platforms)}`)
-  lines.push(`}`)
-  lines.push(``)
-  if (o.external) lines.push(`# Save the profile (the ".mobileconfig" output) to: ${filePath}`)
-  lines.push(`resource "zentral_mdm_profile" "${slug}" {`)
-  lines.push(`  artifact_id = zentral_mdm_artifact.${slug}.id`)
+  lines.push(`resource "zentral_mdm_profile" "${o.slug}" {`)
+  lines.push(`  artifact_id = zentral_mdm_artifact.${o.artifactSlug}.id`)
   if (o.external) {
-    lines.push(`  source      = filebase64("\${path.module}/${filePath}")`)
+    lines.push(`  source      = filebase64("\${path.module}/mobileconfigs/${o.fileName}")`)
   } else {
     lines.push(`  source      = base64encode(<<PROFILE`)
     lines.push(escapeHeredoc(o.profileXml))
@@ -206,28 +214,46 @@ export function renderProfileTf(o: ProfileRenderOpts): Rendered {
   lines.push(...platformLines(pm.bools, o.constraints ?? {}))
   lines.push(`  version = ${o.version}`)
   lines.push(`}`)
-  return { tf: lines.join('\n') + '\n', mobileconfig: o.external ? { name: o.fileName, content: o.profileXml } : undefined }
+  return { block: lines.join('\n'), mobileconfig: o.external ? { name: o.fileName, content: o.profileXml } : undefined }
+}
+
+export function renderDeclarationResourceBlock(o: {
+  slug: string; artifactSlug: string; version: number; platforms: string[]
+  constraints?: PlatformConstraints; declaration: Record<string, any>
+}): string {
+  const pm = mapPlatforms(o.platforms)
+  const lines: string[] = []
+  lines.push(`resource "zentral_mdm_declaration" "${o.slug}" {`)
+  lines.push(`  artifact_id = zentral_mdm_artifact.${o.artifactSlug}.id`)
+  lines.push(`  source      = jsonencode(${toHcl(o.declaration, 2)})`)
+  lines.push(...platformLines(pm.bools, o.constraints ?? {}))
+  lines.push(`  version = ${o.version}`)
+  lines.push(`}`)
+  return lines.join('\n')
+}
+
+export function renderProfileTf(o: ProfileRenderOpts): Rendered {
+  const slug = tfSlug(o.slug || o.name || 'profile')
+  const pm = mapPlatforms(o.platforms)
+  const parts: string[] = []
+  if (pm.dropped.length) parts.push(`# Note: ${pm.dropped.join(', ')} — no Zentral MDM artifact platform equivalent; omitted.`)
+  parts.push(renderArtifactBlock({ slug, type: 'Profile', name: o.name, channel: o.channel, platforms: o.platforms }))
+  parts.push('')
+  if (o.external) parts.push(`# Save the profile (the ".mobileconfig" output) to: mobileconfigs/${o.fileName}`)
+  const r = renderProfileResourceBlock({ slug, artifactSlug: slug, version: o.version, platforms: o.platforms, constraints: o.constraints, external: o.external, fileName: o.fileName, profileXml: o.profileXml })
+  parts.push(r.block)
+  return { tf: parts.join('\n') + '\n', mobileconfig: r.mobileconfig }
 }
 
 export function renderDeclarationTf(o: DeclarationRenderOpts): Rendered {
   const slug = tfSlug(o.slug || o.name || 'declaration')
   const at = declarationArtifactType(o.declaration.Type ?? '')
   const pm = mapPlatforms(o.platforms)
-  const lines: string[] = []
-  if (at.note) lines.push(`# Note: ${at.note}`)
-  if (pm.dropped.length) lines.push(`# Note: ${pm.dropped.join(', ')} — no Zentral MDM artifact platform equivalent; omitted.`)
-  lines.push(`resource "zentral_mdm_artifact" "${slug}" {`)
-  lines.push(`  name      = ${tfString(o.name)}`)
-  lines.push(`  type      = ${tfString(at.type)}`)
-  lines.push(`  channel   = ${tfString(o.channel)}`)
-  lines.push(`  platforms = ${tfStringArray(pm.platforms)}`)
-  lines.push(`}`)
-  lines.push(``)
-  lines.push(`resource "zentral_mdm_declaration" "${slug}" {`)
-  lines.push(`  artifact_id = zentral_mdm_artifact.${slug}.id`)
-  lines.push(`  source      = jsonencode(${toHcl(o.declaration, 2)})`)
-  lines.push(...platformLines(pm.bools, o.constraints ?? {}))
-  lines.push(`  version = ${o.version}`)
-  lines.push(`}`)
-  return { tf: lines.join('\n') + '\n' }
+  const parts: string[] = []
+  if (at.note) parts.push(`# Note: ${at.note}`)
+  if (pm.dropped.length) parts.push(`# Note: ${pm.dropped.join(', ')} — no Zentral MDM artifact platform equivalent; omitted.`)
+  parts.push(renderArtifactBlock({ slug, type: at.type, name: o.name, channel: o.channel, platforms: o.platforms }))
+  parts.push('')
+  parts.push(renderDeclarationResourceBlock({ slug, artifactSlug: slug, version: o.version, platforms: o.platforms, constraints: o.constraints, declaration: o.declaration }))
+  return { tf: parts.join('\n') + '\n' }
 }

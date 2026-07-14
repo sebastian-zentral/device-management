@@ -80,23 +80,23 @@ function matchDelim(s: string, open: number, openCh: string, closeCh: string): n
   return -1
 }
 
-/** Extract the bodies of every `resource "<type>" "<label>" { … }`. */
-function extractAllBlocks(hcl: string, resourceType: string): { label: string; body: string }[] {
+/** Extract every `resource "<type>" "<label>" { … }` with its full source text. */
+function extractAllBlocks(hcl: string, resourceType: string): { label: string; body: string; text: string }[] {
   const header = new RegExp(`resource\\s+"${resourceType}"\\s+"([^"]+)"\\s*\\{`, 'g')
-  const out: { label: string; body: string }[] = []
+  const out: { label: string; body: string; text: string }[] = []
   let m: RegExpExecArray | null
   while ((m = header.exec(hcl))) {
     const braceOpen = m.index + m[0].length - 1
     const close = matchDelim(hcl, braceOpen, '{', '}')
     if (close < 0) continue
-    out.push({ label: m[1], body: hcl.slice(braceOpen + 1, close) })
+    out.push({ label: m[1], body: hcl.slice(braceOpen + 1, close), text: hcl.slice(m.index, close + 1) })
     header.lastIndex = close + 1
   }
   return out
 }
 
 /** Extract the body of the first `resource "<type>" "<label>" { … }`. */
-function extractBlock(hcl: string, resourceType: string): { label: string; body: string } | null {
+function extractBlock(hcl: string, resourceType: string): { label: string; body: string; text: string } | null {
   return extractAllBlocks(hcl, resourceType)[0] ?? null
 }
 
@@ -374,6 +374,12 @@ export interface RepoArtifact {
   profileSource?: TfProfileSource
   declaration?: Record<string, any>
   warnings: string[]
+  // Original source text of the artifact block and the profile/declaration
+  // block, so edits can be spliced back in place while preserving the file.
+  artifactBlockText?: string
+  resourceBlockText?: string
+  // Set once the user has actually edited this artifact in the builder.
+  edited?: boolean
 }
 
 export interface RepoParseResult {
@@ -392,7 +398,11 @@ export function parseTerraformRepo(tfSources: string[], files: Record<string, st
   const hcl = tfSources.join('\n\n')
 
   const artifactByLabel = new Map<string, TfArtifact>()
-  for (const b of extractAllBlocks(hcl, 'zentral_mdm_artifact')) artifactByLabel.set(b.label, parseArtifactBody(b.body))
+  const artifactTextByLabel = new Map<string, string>()
+  for (const b of extractAllBlocks(hcl, 'zentral_mdm_artifact')) {
+    artifactByLabel.set(b.label, parseArtifactBody(b.body))
+    artifactTextByLabel.set(b.label, b.text)
+  }
 
   const artifacts: RepoArtifact[] = []
 
@@ -404,7 +414,10 @@ export function parseTerraformRepo(tfSources: string[], files: Record<string, st
     if (src.kind === 'template') warnings.push('templatefile ${…} variables left as placeholders')
     if (src.kind === 'file') warnings.push('.mobileconfig not found — metadata only')
     if (src.kind === 'unresolved') warnings.push(src.note ?? 'source could not be resolved')
-    artifacts.push({ label: b.label, kind: 'profile', artifactLabel, artifact, ...parseCommon(b.body), profileSource: src, warnings })
+    artifacts.push({
+      label: b.label, kind: 'profile', artifactLabel, artifact, ...parseCommon(b.body), profileSource: src, warnings,
+      artifactBlockText: artifactLabel ? artifactTextByLabel.get(artifactLabel) : undefined, resourceBlockText: b.text,
+    })
   }
 
   for (const b of extractAllBlocks(hcl, 'zentral_mdm_declaration')) {
@@ -414,7 +427,10 @@ export function parseTerraformRepo(tfSources: string[], files: Record<string, st
     let declaration: Record<string, any> = {}
     try { declaration = parseDeclarationObject(b.body) } catch (e: any) { warnings.push(e.message) }
     if (JSON.stringify(declaration).includes('var.')) warnings.push('contains var.* placeholders')
-    artifacts.push({ label: b.label, kind: 'declaration', artifactLabel, artifact, ...parseCommon(b.body), declaration, warnings })
+    artifacts.push({
+      label: b.label, kind: 'declaration', artifactLabel, artifact, ...parseCommon(b.body), declaration, warnings,
+      artifactBlockText: artifactLabel ? artifactTextByLabel.get(artifactLabel) : undefined, resourceBlockText: b.text,
+    })
   }
 
   const counts = new Map<string, number>()
