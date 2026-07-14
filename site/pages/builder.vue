@@ -10,7 +10,7 @@ import {
   profilePayloadChannels, combineProfileChannels, declarationChannels, resolveChannel,
 } from '~/utils/channel'
 import { parsePlist } from '~/utils/parsePlist'
-import { type RepoArtifact, type RepoParseResult, type TfImportResult, parseTerraform, platformsToBuilder } from '~/utils/parseTerraform'
+import { type RepoArtifact, type TfImportResult, parseTerraform, platformsToBuilder } from '~/utils/parseTerraform'
 
 useHead({ title: 'Builder — Device Management' })
 
@@ -505,10 +505,9 @@ async function handleTfImport(hcl: string) {
   showTfImport.value = false
 }
 
-// The parsed repo list persists so the import modal can be reopened to pick
-// another artifact without re-selecting the folder.
-const repoImport = ref<{ result: RepoParseResult; tfFileCount: number; mcFileCount: number } | null>(null)
-const repoPickedLabel = ref('')
+// The parsed repo list lives in app-wide state so it persists across the modal
+// and is shown in the left sidebar; picking from either place loads it here.
+const { data: repoImport, pickedLabel: repoPickedLabel, loadRequest: repoLoadRequest } = useRepoImport()
 
 async function handleRepoImport(a: RepoArtifact) {
   await applyParsedArtifact(a)
@@ -516,6 +515,14 @@ async function handleRepoImport(a: RepoArtifact) {
   repoPickedLabel.value = a.label
   showRepoImport.value = false
 }
+
+// Load an artifact requested from the sidebar (fires on mount too, so a request
+// made from another page is honoured once the builder mounts).
+watch(repoLoadRequest, (req) => {
+  if (!req || !repoImport.value) return
+  const a = repoImport.value.result.artifacts.find(x => x.label === req.label)
+  if (a) handleRepoImport(a)
+}, { immediate: true })
 
 // ── "Open in builder" from schema page ─────────────────────────────────────────
 const route = useRoute()
@@ -685,24 +692,12 @@ if (preloadPath) {
                 @update:model-value="(v) => updatePayloadKey(entry, key.key, v)"
               />
             </div>
-            <!-- Unknown type: show imported values as editable key-value pairs -->
-            <div v-else>
-              <p class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2 mb-3">
-                This payload type is not in the schema library. Imported values are shown below and will be included in the output as-is.
-              </p>
-              <div class="space-y-2">
-                <div
-                  v-for="(val, key) in entry.formData"
-                  :key="key"
-                  class="flex items-start gap-3 text-sm"
-                >
-                  <code class="font-mono font-semibold text-slate-700 shrink-0 min-w-32">{{ key }}</code>
-                  <span class="text-slate-500 font-mono text-xs bg-slate-50 px-2 py-1 rounded border border-slate-200 break-all">
-                    {{ JSON.stringify(val) }}
-                  </span>
-                </div>
-              </div>
-            </div>
+            <!-- Unknown type: edit the imported values directly as JSON -->
+            <BuilderRawPayloadEditor
+              v-else
+              :model-value="entry.formData"
+              @update:model-value="(v) => entry.formData = v"
+            />
           </div>
         </div>
 

@@ -6,6 +6,16 @@ const props = defineProps<{ nav: NavSection[] }>()
 
 const route = useRoute()
 const search = ref('')
+
+// Imported repo artifacts (shared with the builder page).
+const { data: repoImport, pickedLabel, requestLoad } = useRepoImport()
+const importedArtifacts = computed(() => repoImport.value?.result.artifacts ?? [])
+const importExpanded = ref(true)
+
+async function openImported(label: string) {
+  requestLoad(label)
+  if (route.path !== '/builder') await navigateTo('/builder')
+}
 const expandedGroups = ref<Set<string>>(new Set(['MDM Protocol', 'Declarative', 'Other']))
 const expandedSections = ref<Set<string>>(new Set())
 
@@ -112,6 +122,42 @@ function isActive(url: string) {
 
     <!-- Nav tree -->
     <div class="flex-1 overflow-y-auto py-2">
+      <!-- Imported artifacts (from a repo folder import) -->
+      <template v-if="importedArtifacts.length">
+        <button
+          class="w-full flex items-center justify-between px-4 py-1.5 text-left"
+          @click="importExpanded = !importExpanded"
+        >
+          <span class="text-xs font-bold uppercase tracking-wider text-ztl-anthracite/40">Imported · {{ importedArtifacts.length }}</span>
+          <svg
+            class="w-3 h-3 text-ztl-anthracite/40 transition-transform"
+            :class="importExpanded ? '' : '-rotate-90'"
+            fill="none" stroke="currentColor" viewBox="0 0 24 24"
+          >
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+          </svg>
+        </button>
+        <div v-if="importExpanded" class="mb-1">
+          <button
+            v-for="a in importedArtifacts"
+            :key="a.label"
+            class="w-full flex items-center gap-2 px-4 py-1 text-sm rounded-md mx-1 transition-colors text-left"
+            :class="a.label === pickedLabel
+              ? 'bg-ztl-cyan text-ztl-anthracite font-medium'
+              : 'text-ztl-anthracite/55 hover:bg-ztl-anthracite/8 hover:text-ztl-anthracite'"
+            @click="openImported(a.label)"
+          >
+            <span
+              class="shrink-0 text-[9px] font-semibold uppercase px-1 py-0.5 rounded"
+              :class="a.kind === 'profile' ? 'bg-ztl-cyan/20 text-ztl-navy' : 'bg-purple-100 text-purple-700'"
+            >{{ a.kind === 'profile' ? 'P' : 'D' }}</span>
+            <span class="truncate flex-1">{{ a.artifact.name || a.label }}</span>
+            <span v-if="a.warnings.length" class="shrink-0 text-amber-500 text-xs" :title="a.warnings.join('; ')">⚠</span>
+          </button>
+        </div>
+        <div class="mx-4 my-2 border-t border-ztl-anthracite/10" />
+      </template>
+
       <template v-for="group in GROUPS" :key="group">
         <template v-if="sectionsForGroup(group).length">
           <button
