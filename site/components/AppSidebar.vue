@@ -8,13 +8,18 @@ const route = useRoute()
 const search = ref('')
 
 // Imported repo artifacts (shared with the builder page).
-const { data: repoImport, pickedLabel, requestLoad } = useRepoImport()
+const { data: repoImport, pickedLabel, requestLoad, requestExport } = useRepoImport()
 const importedArtifacts = computed(() => repoImport.value?.result.artifacts ?? [])
 const importExpanded = ref(true)
 
 async function openImported(label: string) {
   requestLoad(label)
   if (route.path !== '/builder') await navigateTo('/builder')
+}
+
+async function exportAll() {
+  if (route.path !== '/builder') await navigateTo('/builder')
+  requestExport()
 }
 const expandedGroups = ref<Set<string>>(new Set(['MDM Protocol', 'Declarative', 'Other']))
 const expandedSections = ref<Set<string>>(new Set())
@@ -124,19 +129,23 @@ function isActive(url: string) {
     <div class="flex-1 overflow-y-auto py-2">
       <!-- Imported artifacts (from a repo folder import) -->
       <template v-if="importedArtifacts.length">
-        <button
-          class="w-full flex items-center justify-between px-4 py-1.5 text-left"
-          @click="importExpanded = !importExpanded"
-        >
-          <span class="text-xs font-bold uppercase tracking-wider text-ztl-anthracite/40">Imported · {{ importedArtifacts.length }}</span>
-          <svg
-            class="w-3 h-3 text-ztl-anthracite/40 transition-transform"
-            :class="importExpanded ? '' : '-rotate-90'"
-            fill="none" stroke="currentColor" viewBox="0 0 24 24"
-          >
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
-          </svg>
-        </button>
+        <div class="flex items-center gap-1 px-4 py-1.5">
+          <button class="flex items-center gap-1.5 flex-1 text-left" @click="importExpanded = !importExpanded">
+            <svg
+              class="w-3 h-3 text-ztl-anthracite/40 transition-transform"
+              :class="importExpanded ? '' : '-rotate-90'"
+              fill="none" stroke="currentColor" viewBox="0 0 24 24"
+            >
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+            </svg>
+            <span class="text-xs font-bold uppercase tracking-wider text-ztl-anthracite/40">Imported · {{ importedArtifacts.length }}</span>
+          </button>
+          <button
+            class="shrink-0 text-[10px] font-medium px-1.5 py-0.5 rounded border border-ztl-anthracite/15 text-ztl-anthracite/60 hover:bg-ztl-anthracite/8 hover:text-ztl-anthracite transition-colors"
+            title="Export all imported artifacts (edits included) as a .zip"
+            @click="exportAll"
+          >⬇ Export</button>
+        </div>
         <div v-if="importExpanded" class="mb-1">
           <button
             v-for="a in importedArtifacts"

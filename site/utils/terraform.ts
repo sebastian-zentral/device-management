@@ -154,3 +154,80 @@ export function platformLines(
   }
   return out
 }
+
+// ── Full artifact rendering (pure) ────────────────────────────────────────────
+// Shared by the live builder and the bulk "export all" so both emit identical HCL.
+
+export interface Rendered { tf: string; mobileconfig?: { name: string; content: string } }
+
+interface BaseRenderOpts {
+  name: string
+  channel: string            // "Device" | "User"
+  platforms: string[]        // builder platform names (iOS/macOS/tvOS/…)
+  version: number
+  constraints?: PlatformConstraints
+  slug?: string              // resource local name; defaults to a slug of name
+}
+
+export interface ProfileRenderOpts extends BaseRenderOpts {
+  profileXml: string         // serialized .mobileconfig
+  external: boolean          // filebase64() vs inline base64encode()
+  fileName: string           // basename referenced by filebase64 / companion file
+}
+
+export interface DeclarationRenderOpts extends BaseRenderOpts {
+  declaration: Record<string, any>  // { Type, Identifier, ServerToken, Payload }
+}
+
+export function renderProfileTf(o: ProfileRenderOpts): Rendered {
+  const slug = tfSlug(o.slug || o.name || 'profile')
+  const pm = mapPlatforms(o.platforms)
+  const filePath = `mobileconfigs/${o.fileName}`
+  const lines: string[] = []
+  if (pm.dropped.length) lines.push(`# Note: ${pm.dropped.join(', ')} — no Zentral MDM artifact platform equivalent; omitted.`)
+  lines.push(`resource "zentral_mdm_artifact" "${slug}" {`)
+  lines.push(`  name      = ${tfString(o.name)}`)
+  lines.push(`  type      = "Profile"`)
+  lines.push(`  channel   = ${tfString(o.channel)}`)
+  lines.push(`  platforms = ${tfStringArray(pm.platforms)}`)
+  lines.push(`}`)
+  lines.push(``)
+  if (o.external) lines.push(`# Save the profile (the ".mobileconfig" output) to: ${filePath}`)
+  lines.push(`resource "zentral_mdm_profile" "${slug}" {`)
+  lines.push(`  artifact_id = zentral_mdm_artifact.${slug}.id`)
+  if (o.external) {
+    lines.push(`  source      = filebase64("\${path.module}/${filePath}")`)
+  } else {
+    lines.push(`  source      = base64encode(<<PROFILE`)
+    lines.push(escapeHeredoc(o.profileXml))
+    lines.push(`PROFILE`)
+    lines.push(`  )`)
+  }
+  lines.push(...platformLines(pm.bools, o.constraints ?? {}))
+  lines.push(`  version = ${o.version}`)
+  lines.push(`}`)
+  return { tf: lines.join('\n') + '\n', mobileconfig: o.external ? { name: o.fileName, content: o.profileXml } : undefined }
+}
+
+export function renderDeclarationTf(o: DeclarationRenderOpts): Rendered {
+  const slug = tfSlug(o.slug || o.name || 'declaration')
+  const at = declarationArtifactType(o.declaration.Type ?? '')
+  const pm = mapPlatforms(o.platforms)
+  const lines: string[] = []
+  if (at.note) lines.push(`# Note: ${at.note}`)
+  if (pm.dropped.length) lines.push(`# Note: ${pm.dropped.join(', ')} — no Zentral MDM artifact platform equivalent; omitted.`)
+  lines.push(`resource "zentral_mdm_artifact" "${slug}" {`)
+  lines.push(`  name      = ${tfString(o.name)}`)
+  lines.push(`  type      = ${tfString(at.type)}`)
+  lines.push(`  channel   = ${tfString(o.channel)}`)
+  lines.push(`  platforms = ${tfStringArray(pm.platforms)}`)
+  lines.push(`}`)
+  lines.push(``)
+  lines.push(`resource "zentral_mdm_declaration" "${slug}" {`)
+  lines.push(`  artifact_id = zentral_mdm_artifact.${slug}.id`)
+  lines.push(`  source      = jsonencode(${toHcl(o.declaration, 2)})`)
+  lines.push(...platformLines(pm.bools, o.constraints ?? {}))
+  lines.push(`  version = ${o.version}`)
+  lines.push(`}`)
+  return { tf: lines.join('\n') + '\n' }
+}

@@ -14,12 +14,18 @@ export function useRepoImport() {
   const pickedLabel = useState<string>('repoImport:pickedLabel', () => '')
   // Bumped when the sidebar (or elsewhere) requests loading an artifact by label.
   const loadRequest = useState<{ label: string; n: number } | null>('repoImport:loadRequest', () => null)
+  // Bumped when a bulk "export all" is requested.
+  const exportRequest = useState<number>('repoImport:exportRequest', () => 0)
 
   function requestLoad(label: string) {
     loadRequest.value = { label, n: (loadRequest.value?.n ?? 0) + 1 }
   }
 
-  return { data, pickedLabel, loadRequest, requestLoad }
+  function requestExport() {
+    exportRequest.value++
+  }
+
+  return { data, pickedLabel, loadRequest, exportRequest, requestLoad, requestExport }
 }
 
 export type { RepoArtifact }

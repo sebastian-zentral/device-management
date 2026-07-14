@@ -17,6 +17,7 @@
     "codemirror": "^6.0.2",
     "codemirror-lang-hcl": "^0.1.0",
     "js-yaml": "^4.1.1",
+    "jszip": "^3.10.1",
     "marked": "^14.1.4",
     "nuxt": "^4.4.2"
   },

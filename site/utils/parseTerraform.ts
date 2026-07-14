@@ -8,6 +8,8 @@
 // (reported as such), and `var.*`/expression values become editable string
 // placeholders.
 
+import { type Rendered, renderProfileTf, renderDeclarationTf } from '~/utils/terraform'
+
 export interface TfArtifact {
   name?: string
   type?: string
@@ -424,6 +426,27 @@ export function parseTerraformRepo(tfSources: string[], files: Record<string, st
 
   artifacts.sort((a, b) => (a.artifact.name || a.label).localeCompare(b.artifact.name || b.label))
   return { artifacts, skipped }
+}
+
+/**
+ * Render a parsed repo artifact back to HCL (+ its .mobileconfig when the profile
+ * references an external file). Returns null for a profile whose content couldn't
+ * be resolved. Uses the artifact's original resource label as the slug to keep
+ * names stable and unique across the combined export.
+ */
+export function renderRepoArtifact(a: RepoArtifact): Rendered | null {
+  const platforms = platformsToBuilder(a.artifact.platforms, a.platformBools)
+  const name = a.artifact.name || a.label
+  const channel = a.artifact.channel === 'User' ? 'User' : 'Device'
+  const version = a.version ?? 1
+  const constraints = a.constraints ?? {}
+  if (a.kind === 'profile') {
+    const xml = a.profileSource?.xml
+    if (!xml) return null
+    const fileName = a.profileSource?.fileName || `${a.label}.v${version}.mobileconfig`
+    return renderProfileTf({ slug: a.label, name, channel, platforms, version, constraints, profileXml: xml, external: !!a.profileSource?.external, fileName })
+  }
+  return renderDeclarationTf({ slug: a.label, name, channel, platforms, version, constraints, declaration: a.declaration ?? {} })
 }
 
 /** Map provider artifact platforms (macOS/iOS/iPadOS/tvOS) back to builder targets. */

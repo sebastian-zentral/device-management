@@ -1,16 +1,13 @@
 <script setup lang="ts">
 import { toPlist } from '~/utils/plist'
 import { initFormData } from '~/utils/formInit'
-import {
-  tfString, tfStringArray, tfSlug, toHcl, escapeHeredoc,
-  mapPlatforms, declarationArtifactType, platformLines,
-} from '~/utils/terraform'
+import { tfSlug, mapPlatforms, renderProfileTf, renderDeclarationTf } from '~/utils/terraform'
 import {
   type Channel,
   profilePayloadChannels, combineProfileChannels, declarationChannels, resolveChannel,
 } from '~/utils/channel'
 import { parsePlist } from '~/utils/parsePlist'
-import { type RepoArtifact, type TfImportResult, parseTerraform, platformsToBuilder } from '~/utils/parseTerraform'
+import { type RepoArtifact, type TfImportResult, parseTerraform, platformsToBuilder, renderRepoArtifact } from '~/utils/parseTerraform'
 
 useHead({ title: 'Builder — Device Management' })
 
@@ -303,80 +300,36 @@ function buildDeclaration(): string {
 
 // ── Terraform output (terraform-provider-zentral) ────────────────────────────────
 function buildProfileTerraform(): string {
-  const profile = buildProfile()
-  if (!profile) return ''
-
-  const name = artifactName.value || profileMeta.PayloadDisplayName || profileMeta.PayloadIdentifier || 'My Profile'
-  const slug = tfSlug(name || profileMeta.PayloadIdentifier || 'profile')
-  const pm = mapPlatforms(platformContext.platforms)
-  const version = artifactVersion.value
-  const filePath = `mobileconfigs/${mobileconfigFilename.value}`
-
-  const lines: string[] = []
-  if (pm.dropped.length) {
-    lines.push(`# Note: ${pm.dropped.join(', ')} — no Zentral MDM artifact platform equivalent; omitted.`)
-  }
-  lines.push(`resource "zentral_mdm_artifact" "${slug}" {`)
-  lines.push(`  name      = ${tfString(name)}`)
-  lines.push(`  type      = "Profile"`)
-  lines.push(`  channel   = ${tfString(channel.value)}`)
-  lines.push(`  platforms = ${tfStringArray(pm.platforms)}`)
-  lines.push(`}`)
-  lines.push(``)
-  if (externalFile.value) {
-    lines.push(`# Save the profile (the ".mobileconfig" output) to: ${filePath}`)
-  }
-  lines.push(`resource "zentral_mdm_profile" "${slug}" {`)
-  lines.push(`  artifact_id = zentral_mdm_artifact.${slug}.id`)
-  if (externalFile.value) {
-    lines.push(`  source      = filebase64("\${path.module}/${filePath}")`)
-  } else {
-    lines.push(`  source      = base64encode(<<PROFILE`)
-    lines.push(escapeHeredoc(profile))
-    lines.push(`PROFILE`)
-    lines.push(`  )`)
-  }
-  lines.push(...platformLines(pm.bools, versionConstraints))
-  lines.push(`  version = ${version}`)
-  lines.push(`}`)
-  return lines.join('\n') + '\n'
+  const xml = buildProfile()
+  if (!xml) return ''
+  return renderProfileTf({
+    name: artifactName.value || profileMeta.PayloadDisplayName || profileMeta.PayloadIdentifier || 'My Profile',
+    channel: channel.value,
+    platforms: platformContext.platforms,
+    version: artifactVersion.value,
+    constraints: versionConstraints,
+    profileXml: xml,
+    external: externalFile.value,
+    fileName: mobileconfigFilename.value,
+  }).tf
 }
 
 function buildDeclarationTerraform(): string {
   if (!declSchema.value) return ''
-
-  const declType = declSchema.value.payload?.declarationtype ?? ''
-  const decl = {
-    Type: declType,
+  const declaration = {
+    Type: declSchema.value.payload?.declarationtype ?? '',
     Identifier: declIdentifier.value || 'com.example.declaration',
     ServerToken: declServerToken.value || genUuid(),
     Payload: declFormData.value,
   }
-
-  const name = artifactName.value || declSchema.value.title || declIdentifier.value || 'Declaration'
-  const slug = tfSlug(name || declIdentifier.value || 'declaration')
-  const at = declarationArtifactType(declType)
-  const pm = mapPlatforms(platformContext.platforms)
-
-  const lines: string[] = []
-  if (at.note) lines.push(`# Note: ${at.note}`)
-  if (pm.dropped.length) {
-    lines.push(`# Note: ${pm.dropped.join(', ')} — no Zentral MDM artifact platform equivalent; omitted.`)
-  }
-  lines.push(`resource "zentral_mdm_artifact" "${slug}" {`)
-  lines.push(`  name      = ${tfString(name)}`)
-  lines.push(`  type      = ${tfString(at.type)}`)
-  lines.push(`  channel   = ${tfString(channel.value)}`)
-  lines.push(`  platforms = ${tfStringArray(pm.platforms)}`)
-  lines.push(`}`)
-  lines.push(``)
-  lines.push(`resource "zentral_mdm_declaration" "${slug}" {`)
-  lines.push(`  artifact_id = zentral_mdm_artifact.${slug}.id`)
-  lines.push(`  source      = jsonencode(${toHcl(decl, 2)})`)
-  lines.push(...platformLines(pm.bools, versionConstraints))
-  lines.push(`  version = ${artifactVersion.value}`)
-  lines.push(`}`)
-  return lines.join('\n') + '\n'
+  return renderDeclarationTf({
+    name: artifactName.value || declSchema.value.title || declIdentifier.value || 'Declaration',
+    channel: channel.value,
+    platforms: platformContext.platforms,
+    version: artifactVersion.value,
+    constraints: versionConstraints,
+    declaration,
+  }).tf
 }
 
 // ── Import .mobileconfig ───────────────────────────────────────────────────────
@@ -507,13 +460,37 @@ async function handleTfImport(hcl: string) {
 
 // The parsed repo list lives in app-wide state so it persists across the modal
 // and is shown in the left sidebar; picking from either place loads it here.
-const { data: repoImport, pickedLabel: repoPickedLabel, loadRequest: repoLoadRequest } = useRepoImport()
+const { data: repoImport, pickedLabel: repoPickedLabel, loadRequest: repoLoadRequest, exportRequest: repoExportRequest } = useRepoImport()
 
 async function handleRepoImport(a: RepoArtifact) {
+  // Persist edits to the artifact we're leaving so they survive the switch.
+  if (repoPickedLabel.value && repoPickedLabel.value !== a.label) commitFormToArtifact(repoPickedLabel.value)
   await applyParsedArtifact(a)
   if (a.warnings?.length) importNote.value = [importNote.value, ...a.warnings].filter(Boolean).join(' · ')
   repoPickedLabel.value = a.label
   showRepoImport.value = false
+}
+
+// Write the current builder form state back onto its imported artifact, so the
+// bulk export reflects edits made across several artifacts.
+function commitFormToArtifact(label: string) {
+  const a = repoImport.value?.result.artifacts.find(x => x.label === label)
+  if (!a) return
+  const pm = mapPlatforms(platformContext.platforms)
+  a.artifact = { ...a.artifact, name: artifactName.value || a.artifact.name, channel: channel.value, platforms: pm.platforms }
+  a.platformBools = pm.bools
+  a.version = artifactVersion.value
+  a.constraints = JSON.parse(JSON.stringify(versionConstraints))
+  if (a.kind === 'profile' && mode.value === 'profile') {
+    a.profileSource = { kind: 'xml', xml: buildProfile(), external: externalFile.value, fileName: mobileconfigFilename.value }
+  } else if (a.kind === 'declaration' && mode.value === 'declaration') {
+    a.declaration = {
+      Type: declSchema.value?.payload?.declarationtype ?? a.declaration?.Type ?? '',
+      Identifier: declIdentifier.value || 'com.example.declaration',
+      ServerToken: declServerToken.value || a.declaration?.ServerToken || genUuid(),
+      Payload: JSON.parse(JSON.stringify(declFormData.value)),
+    }
+  }
 }
 
 // Load an artifact requested from the sidebar (fires on mount too, so a request
@@ -523,6 +500,37 @@ watch(repoLoadRequest, (req) => {
   const a = repoImport.value.result.artifacts.find(x => x.label === req.label)
   if (a) handleRepoImport(a)
 }, { immediate: true })
+
+// Export every imported artifact (edits included) as a zip: a combined
+// mdm_artifacts.tf plus the mobileconfigs/ files referenced via filebase64().
+watch(repoExportRequest, (n) => { if (n) exportAll() })
+
+async function exportAll() {
+  if (!repoImport.value) return
+  if (repoPickedLabel.value) commitFormToArtifact(repoPickedLabel.value)
+
+  const tfBlocks: string[] = []
+  const skipped: string[] = []
+  const JSZip = (await import('jszip')).default
+  const zip = new JSZip()
+  for (const a of repoImport.value.result.artifacts) {
+    const r = renderRepoArtifact(a)
+    if (!r) { skipped.push(a.artifact.name || a.label); continue }
+    tfBlocks.push(r.tf)
+    if (r.mobileconfig) zip.file(`mobileconfigs/${r.mobileconfig.name}`, r.mobileconfig.content)
+  }
+  zip.file('mdm_artifacts.tf', tfBlocks.join('\n'))
+
+  const blob = await zip.generateAsync({ type: 'blob' })
+  const url = URL.createObjectURL(blob)
+  const el = document.createElement('a')
+  el.href = url; el.download = 'zentral-mdm-artifacts.zip'; el.click()
+  URL.revokeObjectURL(url)
+
+  importNote.value = skipped.length
+    ? `Exported ${tfBlocks.length} artifact(s). Skipped (source not resolved): ${skipped.join(', ')}`
+    : `Exported ${tfBlocks.length} artifact(s) to zentral-mdm-artifacts.zip.`
+}
 
 // ── "Open in builder" from schema page ─────────────────────────────────────────
 const route = useRoute()
