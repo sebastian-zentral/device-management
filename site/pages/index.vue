@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { data: nav } = await useAsyncData('nav', () => apiFetch('/api/nav'))
+const { data: nav } = await useNav()
 
 const totalSchemas = computed(() =>
   (nav.value ?? []).reduce((sum, s) => sum + s.schemas.length, 0),
@@ -21,6 +21,16 @@ function sectionsForGroup(group: string) {
         Build and validate MDM profiles and Declarative Device Management configurations —
         backed by <strong class="text-ztl-anthracite">{{ totalSchemas }}</strong> schemas.
       </p>
+      <p class="text-xl text-ztl-anthracite/70">Schema data mirrors Apple's open-source
+        <a
+          href="https://github.com/apple/device-management"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-black font-medium hover:underline inline-flex items-center gap-1"
+        >
+          <Icon name="lucide:github" class="w-4 h-4" />apple/device-management<Icon name="lucide:external-link" class="w-3 h-3" />
+        </a>
+        repository. </p>
     </div>
 
     <!-- Primary tools -->
@@ -81,16 +91,7 @@ function sectionsForGroup(group: string) {
     <!-- Source attribution -->
     <footer class="mt-14 pt-6 border-t border-slate-200 text-sm text-ztl-anthracite/60">
       <p>
-        Schema data mirrors Apple's open-source
-        <a
-          href="https://github.com/apple/device-management"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="text-ztl-navy font-medium hover:underline inline-flex items-center gap-1"
-        >
-          <Icon name="lucide:github" class="w-4 h-4" />apple/device-management<Icon name="lucide:external-link" class="w-3 h-3" />
-        </a>
-        repository. All schema content is © Apple; this tool only renders it.
+        All schema content is © Apple; this tool only renders it.
       </p>
     </footer>
   </div>

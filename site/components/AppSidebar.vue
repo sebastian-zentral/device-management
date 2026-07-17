@@ -7,6 +7,10 @@ const props = defineProps<{ nav: NavSection[] }>()
 const route = useRoute()
 const search = ref('')
 
+// Schema branch switcher.
+const { branch, branches, ensureBranches, loading: branchesLoading } = useBranch()
+onMounted(ensureBranches)
+
 // Imported repo artifacts (shared with the builder page).
 const { data: repoImport, pickedLabel, requestLoad, requestExport } = useRepoImport()
 const importedArtifacts = computed(() => repoImport.value?.result.artifacts ?? [])
@@ -108,6 +112,27 @@ function isActive(url: string) {
           <Icon name="lucide:circle-check" class="w-4 h-4" /> Validator
         </NuxtLink>
       </div>
+    </div>
+
+    <!-- Schema branch -->
+    <div class="px-3 py-3 border-b border-ztl-anthracite/10 shrink-0">
+      <label class="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-wider text-ztl-anthracite/40 mb-1.5">
+        <Icon name="lucide:git-branch" class="w-3 h-3" /> Schema branch
+      </label>
+      <div class="relative">
+        <select
+          v-model="branch"
+          class="w-full appearance-none pl-2.5 pr-7 py-1.5 text-sm bg-white rounded-md border border-ztl-anthracite/15 text-ztl-anthracite focus:outline-none focus:ring-2 focus:ring-ztl-cyan"
+        >
+          <option v-for="b in branches" :key="b.value" :value="b.value">{{ b.label }}</option>
+        </select>
+        <Icon
+          :name="branchesLoading ? 'lucide:loader-circle' : 'lucide:chevron-down'"
+          class="absolute right-2 top-2 w-3.5 h-3.5 text-ztl-anthracite/40 pointer-events-none"
+          :class="branchesLoading ? 'animate-spin' : ''"
+        />
+      </div>
+      <p v-if="branch" class="text-[10px] text-ztl-anthracite/40 mt-1 leading-tight">Fetched live from GitHub</p>
     </div>
 
     <!-- Search -->

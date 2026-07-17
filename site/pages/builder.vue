@@ -343,17 +343,16 @@ const PAYLOAD_META_KEYS = new Set([
   'PayloadEnabled', 'PayloadScope',
 ])
 
-// Fetch nav once so we can look up schemas by PayloadType
-const { data: navData } = await useAsyncData('nav', () =>
-  apiFetch<Array<{ id: string; urlPrefix: string; schemas: Array<{ slug: string; url: string }> }>>('/api/nav'),
-)
+// Nav + selected branch, so we can look up schemas by PayloadType on any branch.
+const { data: navData } = await useNav()
+const { branch } = useBranch()
 
 async function schemaForPayloadType(payloadType: string): Promise<Record<string, any>> {
   const section = navData.value?.find(s => s.id === 'mdm-profiles')
   const match = section?.schemas.find(s => s.slug === payloadType)
   if (match) {
     try {
-      return await apiFetch<Record<string, any>>(`/api/schema/mdm/profiles/${payloadType}`)
+      return await loadSchema(branch.value, `mdm/profiles/${payloadType}`)
     } catch { /* fall through to stub */ }
   }
   // Unknown type — return a stub so the form still shows imported values
@@ -407,7 +406,7 @@ async function schemaForDeclarationType(type: string): Promise<Record<string, an
   const m = /^com\.apple\.(configuration|activation|asset|management)\.(.+)$/.exec(type || '')
   if (m) {
     try {
-      return await apiFetch<Record<string, any>>(`/api/schema/${DECL_BUCKETS[m[1]]}/${m[2]}`)
+      return await loadSchema(branch.value, `${DECL_BUCKETS[m[1]]}/${m[2]}`)
     } catch { /* fall through to stub */ }
   }
   return { title: type, payload: { declarationtype: type }, payloadkeys: [], _unknown: true }
@@ -585,7 +584,7 @@ const route = useRoute()
 const preloadPath = route.query.schema as string | undefined
 if (preloadPath) {
   const data = await useAsyncData(`preload-${preloadPath}`, () =>
-    apiFetch<Record<string, any>>(`/api/schema/${preloadPath}`),
+    loadSchema(branch.value, preloadPath),
   )
   if (data.data.value) {
     const schema = data.data.value

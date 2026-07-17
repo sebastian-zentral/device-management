@@ -1,5 +1,5 @@
 <script setup lang="ts">
-const { data: nav } = await useAsyncData('nav', () => apiFetch('/api/nav'))
+const { data: nav } = await useNav()
 const sidebarOpen = ref(false)
 const route = useRoute()
 

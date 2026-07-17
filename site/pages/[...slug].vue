@@ -20,15 +20,16 @@ const matchedSection = computed(() =>
 )
 const isCategory = computed(() => !!matchedSection.value)
 
-const { data: nav } = await useAsyncData('nav', () => apiFetch('/api/nav'))
+const { data: nav } = await useNav()
+const { branch } = useBranch()
 
 const { data: schema, error } = await useAsyncData(
   `schema-${urlPath.value}`,
   async () => {
     if (isCategory.value) return null
-    return apiFetch(`/api/schema/${urlPath.value}`)
+    return loadSchema(branch.value, urlPath.value)
   },
-  { watch: [urlPath] },
+  { watch: [urlPath, branch] },
 )
 
 interface NavSchema {

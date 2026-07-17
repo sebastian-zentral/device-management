@@ -21,7 +21,8 @@ const props = defineProps<{
 }>()
 const emit = defineEmits<{ select: [schema: Record<string, any>]; close: [] }>()
 
-const { data: nav } = await useAsyncData('nav', () => apiFetch<NavSection[]>('/api/nav'))
+const { data: nav } = await useNav()
+const { branch } = useBranch()
 const search = ref('')
 const loading = ref(false)
 
@@ -66,7 +67,7 @@ const sections = computed(() => {
 async function pick(schema: NavSchema) {
   loading.value = true
   try {
-    const data = await apiFetch<Record<string, any>>(`/api/schema/${schema.url.replace(/^\//, '')}`)
+    const data = await loadSchema(branch.value, schema.url)
     emit('select', data)
   } finally {
     loading.value = false

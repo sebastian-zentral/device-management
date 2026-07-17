@@ -4,23 +4,23 @@ import { validateProfile, type ProfileValidationResult, type ValidationIssue } f
 
 useHead({ title: 'Profile Validator — Device Management' })
 
-const { data: navData } = await useAsyncData('nav', () =>
-  apiFetch<Array<{ id: string; urlPrefix: string; schemas: Array<{ slug: string }> }>>('/api/nav'),
-)
+const { data: navData } = await useNav()
+const { branch } = useBranch()
 
 const schemaCache = new Map<string, Record<string, any> | null>()
 
 async function fetchSchema(payloadType: string): Promise<Record<string, any> | null> {
-  if (schemaCache.has(payloadType)) return schemaCache.get(payloadType)!
+  const cacheKey = `${branch.value}:${payloadType}`
+  if (schemaCache.has(cacheKey)) return schemaCache.get(cacheKey)!
   const section = navData.value?.find(s => s.id === 'mdm-profiles')
   const match = section?.schemas.find(s => s.slug === payloadType)
-  if (!match) { schemaCache.set(payloadType, null); return null }
+  if (!match) { schemaCache.set(cacheKey, null); return null }
   try {
-    const schema = await apiFetch<Record<string, any>>(`/api/schema/mdm/profiles/${payloadType}`)
-    schemaCache.set(payloadType, schema)
+    const schema = await loadSchema(branch.value, `mdm/profiles/${payloadType}`)
+    schemaCache.set(cacheKey, schema)
     return schema
   } catch {
-    schemaCache.set(payloadType, null)
+    schemaCache.set(cacheKey, null)
     return null
   }
 }
