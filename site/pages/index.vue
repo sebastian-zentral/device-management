@@ -77,5 +77,21 @@ function sectionsForGroup(group: string) {
         </div>
       </div>
     </div>
+
+    <!-- Source attribution -->
+    <footer class="mt-14 pt-6 border-t border-slate-200 text-sm text-ztl-anthracite/60">
+      <p>
+        Schema data mirrors Apple's open-source
+        <a
+          href="https://github.com/apple/device-management"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="text-ztl-navy font-medium hover:underline inline-flex items-center gap-1"
+        >
+          <Icon name="lucide:github" class="w-4 h-4" />apple/device-management<Icon name="lucide:external-link" class="w-3 h-3" />
+        </a>
+        repository. All schema content is © Apple; this tool only renders it.
+      </p>
+    </footer>
   </div>
 </template>
